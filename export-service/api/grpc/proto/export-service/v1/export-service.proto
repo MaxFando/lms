@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package export_service.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "export_service/v1";
+
+service ExportService {
+  rpc Echo(EchoRequest) returns (EchoResponse);
+}
+
+message EchoRequest {
+  string message = 1;
+}
+
+message EchoResponse {
+  string message = 1;
+}

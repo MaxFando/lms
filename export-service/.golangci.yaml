@@ -1,0 +1,80 @@
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - errorlint
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - asciicheck
+    - bodyclose
+    - containedctx
+    - copyloopvar
+    - cyclop
+    - dogsled
+    - dupl
+    - funlen
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - gosec
+    - goimports
+    - iface
+    - mnd
+    - nestif
+    - nilnil
+    - nlreturn
+    - perfsprint
+    - prealloc
+    - predeclared
+    - protogetter
+    - rowserrcheck
+linters-settings:
+  goimports:
+    local-prefixes: github.com/MaxFando/lms/export-service
+  protogetter:
+    skip-files:
+      - "*.pb.go"
+      - "*/vendor/*"
+  predeclared:
+    ignore: "new"
+  gocritic:
+    disable-all: false
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+    match-constant: true
+    numbers: true
+    ignore-calls: true
+  gocognit:
+    min-complexity: 10
+  funlen:
+    lines: 60
+    statements: 40
+    ignore-comments: true
+  errorlint:
+    errorf: true
+    errorf-multi: true
+    asserts: true
+    comparison: true
+  errcheck:
+    check-type-assertions: true
+
+issues:
+  new-from-rev: HEAD
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+        - staticcheck
+run:
+  timeout: 5m
+  relative-path-mode: gomod
+  issues-exit-code: 1
+  allow-parallel-runners: true
+  concurrency: 4
