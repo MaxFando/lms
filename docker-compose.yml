@@ -1,0 +1,107 @@
+version: "3.7"
+
+services:
+  draw-result-service:
+    build:
+      context: draw-result-service
+      dockerfile: ../app.dockerfile
+    env_file: ./.env
+    environment:
+      - SERVICE_NAME=draw-result-service
+    ports:
+      - "50051:50051"
+    depends_on:
+      database:
+        condition: service_healthy
+
+  draw-service:
+    build:
+      context: draw-service
+      dockerfile: ../app.dockerfile
+    env_file: ./.env
+    environment:
+      - SERVICE_NAME=draw-service
+    ports:
+      - "50052:50051"
+    depends_on:
+      database:
+        condition: service_healthy
+
+  export-service:
+    build:
+      context: export-service
+      dockerfile: ../app.dockerfile
+    env_file: ./.env
+    environment:
+      - SERVICE_NAME=export-service
+    ports:
+      - "50053:50051"
+    depends_on:
+      database:
+        condition: service_healthy
+
+  payment-service:
+    build:
+      context: payment-service
+      dockerfile: ../app.dockerfile
+    env_file: ./.env
+    environment:
+      - SERVICE_NAME=payment-service
+    ports:
+      - "50054:50051"
+    depends_on:
+      database:
+        condition: service_healthy
+
+  ticket-service:
+    build:
+      context: ticket-service
+      dockerfile: ../app.dockerfile
+    env_file: ./.env
+    environment:
+      - SERVICE_NAME=ticket-service
+    ports:
+      - "50055:50051"
+    depends_on:
+      database:
+        condition: service_healthy
+
+  user-service:
+    build:
+      context: user-service
+      dockerfile: ../app.dockerfile
+    env_file: ./.env
+    environment:
+      - SERVICE_NAME=user-service
+    ports:
+      - "50056:50051"
+    depends_on:
+      database:
+        condition: service_healthy
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "${JAEGER_AGENT_PORT:-16686}:16686"
+      - "${JAEGER_HTTP_PORT:-4318}:4318"
+
+  database:
+    image: postgres:17-alpine
+    volumes:
+      - database_data:/var/lib/postgresql/data:delegated
+      - ./pg/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d/:delegated
+    environment:
+      POSTGRES_DB: lms
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  database_data:
