@@ -1,19 +1,6 @@
 version: "3.7"
 
 services:
-  draw-result-service:
-    build:
-      context: draw-result-service
-      dockerfile: ../app.dockerfile
-    env_file: ./.env
-    environment:
-      - SERVICE_NAME=draw-result-service
-    ports:
-      - "50051:50051"
-    depends_on:
-      database:
-        condition: service_healthy
-
   draw-service:
     build:
       context: draw-service

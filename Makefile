@@ -15,3 +15,8 @@ down:
 	@echo "Stopping docker compose..."
 	$(compose) down
 	@echo "Done!"
+
+down-v:
+	@echo "Stopping docker compose and removing volumes..."
+	$(compose) down -v
+	@echo "Done!"
