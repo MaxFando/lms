@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"github.com/MaxFando/lms/draw-service/internal/providers"
 	"syscall"
 
 	"github.com/MaxFando/lms/platform/closer"
@@ -45,6 +46,10 @@ func (a *App) Init(ctx context.Context) error {
 
 	if err := a.initDatabaseConnection(ctx); err != nil {
 		return fmt.Errorf("ошибка при инициализации подключения к базе данных: %w", err)
+	}
+
+	if err := a.initLogicProviders(ctx); err != nil {
+		return fmt.Errorf("ошибка при инициализации логических провайдеров: %w", err)
 	}
 
 	a.logger.Info(ctx, "Инициализация приложения завершена успешно")
@@ -127,6 +132,19 @@ func (a *App) initDatabaseConnection(ctx context.Context) error {
 	}
 
 	a.logger.Info(ctx, "Подключение к базе данных успешно установлено")
+
+	return nil
+}
+
+func (a *App) initLogicProviders(ctx context.Context) error {
+	repositoryProvider := providers.NewRepositoryProvider(a.database)
+	repositoryProvider.RegisterDependencies()
+
+	serviceProvider := providers.NewServiceProvider(repositoryProvider)
+	serviceProvider.RegisterDependencies()
+
+	usecaseProvider := providers.NewUsecaseProvider(serviceProvider)
+	usecaseProvider.RegisterDependencies()
 
 	return nil
 }
