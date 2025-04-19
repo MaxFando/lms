@@ -6,14 +6,6 @@ create schema draw;
 grant all privileges on schema draw to lms_owner;
 alter default privileges in schema draw grant all privileges on tables to lms_owner;
 
-create schema draw_result;
-grant all privileges on schema draw_result to lms_owner;
-alter default privileges in schema draw_result grant all privileges on tables to lms_owner;
-
-create schema export;
-grant all privileges on schema export to lms_owner;
-alter default privileges in schema export grant all privileges on tables to lms_owner;
-
 create schema payment;
 grant all privileges on schema payment to lms_owner;
 alter default privileges in schema payment grant all privileges on tables to lms_owner;
