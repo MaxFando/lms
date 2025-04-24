@@ -2,18 +2,53 @@ syntax = "proto3";
 
 package user_service.v1;
 
-import "google/api/annotations.proto";
+option go_package = "github.com/MaxFando/lms/user-service/api/grpc/gen/go/user-service/v1;userservicev1";
 
-option go_package = "user_service/v1";
+message User {
+  int64 id = 1;
+  string name = 2;
+  string role = 3;
+}
+
+message RegisterRequest {
+  string name = 1;
+  string password = 2;
+}
+
+message RegisterResponse {
+  User user = 1;
+  string access_token = 2;
+  string refresh_token = 3;
+}
+
+message LoginRequest {
+  string name = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  User user = 1;
+  string access_token = 2;
+  string refresh_token = 3;
+}
+
+message GetUserRequest {
+  int64 id = 1;
+}
+
+message GetUserResponse {
+  User user = 1;
+}
+
+message ListUsersRequest {}
+
+message ListUsersResponse {
+  repeated User users = 1;
+}
 
 service UserService {
-  rpc Echo(EchoRequest) returns (EchoResponse);
-}
-
-message EchoRequest {
-  string message = 1;
-}
-
-message EchoResponse {
-  string message = 1;
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
 }
