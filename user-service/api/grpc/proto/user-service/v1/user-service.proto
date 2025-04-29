@@ -2,7 +2,8 @@ syntax = "proto3";
 
 package user_service.v1;
 
-option go_package = "github.com/MaxFando/lms/user-service/api/grpc/gen/go/user-service/v1;userservicev1";
+option go_package = "github.com/MaxFando/lms/user-service/api/grpc/gen/go/user-service/v1;user_servicev1";
+
 
 message User {
   int64 id = 1;

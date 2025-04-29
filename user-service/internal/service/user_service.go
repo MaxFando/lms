@@ -22,7 +22,7 @@ func NewUserService(repo repository.UserRepository, jwt jwt.JWTService) *UserSer
 func (s *UserService) Register(ctx context.Context, name, password string) (*model.User, string, string, error) {
 	existing, _ := s.repo.FindByName(ctx, name)
 	if existing != nil {
-		return nil, "", "", errors.New("user already exists")
+		return nil, "", "", errors.New("пользователь уже существует")
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -50,10 +50,10 @@ func (s *UserService) Register(ctx context.Context, name, password string) (*mod
 func (s *UserService) Login(ctx context.Context, name, password string) (*model.User, string, string, error) {
 	user, err := s.repo.FindByName(ctx, name)
 	if err != nil || user == nil {
-		return nil, "", "", errors.New("user not found")
+		return nil, "", "", errors.New("пользователь не найден")
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		return nil, "", "", errors.New("invalid password")
+		return nil, "", "", errors.New("неверный пароль")
 	}
 	accessToken, refreshToken, err := s.jwt.GenerateTokens(user)
 	if err != nil {
