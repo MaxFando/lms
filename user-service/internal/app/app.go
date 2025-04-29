@@ -69,7 +69,7 @@ func (a *App) Run(ctx context.Context) error {
 	srv := server.NewServer(a.logger, userCtrl)
 	srv.Serve(ctx)
 	a.srv = srv
-	
+
 	select {
 	case err := <-srv.Notify():
 		return fmt.Errorf("ошибка сервера: %w", err)

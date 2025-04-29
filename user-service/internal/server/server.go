@@ -8,9 +8,7 @@ import (
 	userservicev1 "github.com/MaxFando/lms/user-service/api/grpc/gen/go/user-service/v1"
 
 	"github.com/MaxFando/lms/platform/logger"
-
 	"github.com/MaxFando/lms/user-service/internal/server/interceptor"
-	v1 "github.com/MaxFando/lms/user-service/internal/server/service/v1"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
@@ -31,11 +29,10 @@ type Server struct {
 	logger     logger.Logger
 
 	grpcPort string
-
-	errors chan error
+	errors   chan error
 }
 
-func NewServer(logger logger.Logger, serviceServer *v1.Server) *Server {
+func NewServer(logger logger.Logger, serviceServer userservicev1.UserServiceServer) *Server {
 	srv := new(Server)
 
 	srv.grpcPort = defaultGRPCPort
@@ -43,7 +40,6 @@ func NewServer(logger logger.Logger, serviceServer *v1.Server) *Server {
 	srv.logger = logger
 
 	srv.grpcServer = initGRPCServer(logger, serviceServer)
-
 	return srv
 }
 
@@ -71,21 +67,18 @@ func (s *Server) Serve(ctx context.Context) {
 
 func (s *Server) Shutdown(ctx context.Context) {
 	s.logger.Info(ctx, "Завершение работы сервера")
-
 	s.grpcServer.GracefulStop()
 	close(s.errors)
 }
 
 func (s *Server) Notify() <-chan error {
 	errorsCh := make(chan error)
-
 	go func() {
 		for err := range s.errors {
 			errorsCh <- err
 		}
 		close(errorsCh)
 	}()
-
 	return errorsCh
 }
 
@@ -93,7 +86,6 @@ func (s *Server) serveGRPC(ctx context.Context) {
 	grpcListener, err := net.Listen("tcp", ":"+s.grpcPort)
 	if err != nil {
 		s.sendError(ctx, err)
-
 		return
 	}
 
@@ -103,7 +95,7 @@ func (s *Server) serveGRPC(ctx context.Context) {
 	}
 }
 
-func initGRPCServer(logger logger.Logger, serviceServer *v1.Server) *grpc.Server {
+func initGRPCServer(logger logger.Logger, serviceServer userservicev1.UserServiceServer) *grpc.Server {
 	server := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			interceptor.PanicRecoveryUnaryInterceptor(logger),
