@@ -12,8 +12,11 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/MaxFando/lms/user-service/config"
+	"github.com/MaxFando/lms/user-service/internal/controller"
+	"github.com/MaxFando/lms/user-service/internal/jwt"
+	"github.com/MaxFando/lms/user-service/internal/repository"
 	"github.com/MaxFando/lms/user-service/internal/server"
-	v1 "github.com/MaxFando/lms/user-service/internal/server/service/v1"
+	"github.com/MaxFando/lms/user-service/internal/service"
 )
 
 type App struct {
@@ -25,7 +28,6 @@ type App struct {
 
 func New(cfg *config.Config) *App {
 	l := logger.NewLogger()
-
 	return &App{
 		logger: l.With("app", "lms"),
 		config: cfg,
@@ -48,20 +50,29 @@ func (a *App) Init(ctx context.Context) error {
 	}
 
 	a.logger.Info(ctx, "Инициализация приложения завершена успешно")
-
 	return nil
 }
 
 func (a *App) Run(ctx context.Context) error {
-	serviceServer := v1.NewServer()
-	srv := server.NewServer(a.logger, serviceServer)
+	repo := repository.NewPostgresUserRepository(a.database)
+
+	jwtSvc := jwt.NewJWTService(
+		a.config.JWTSecret,
+		a.config.AccessTokenTTL,
+		a.config.RefreshTokenTTL,
+	)
+
+	userSvc := service.NewUserService(repo, jwtSvc)
+
+	userCtrl := controller.NewUserController(userSvc)
+
+	srv := server.NewServer(a.logger, userCtrl)
 	srv.Serve(ctx)
-
 	a.srv = srv
-
+	
 	select {
-	case s := <-srv.Notify():
-		return fmt.Errorf("ошибка сервера: %w", s)
+	case err := <-srv.Notify():
+		return fmt.Errorf("ошибка сервера: %w", err)
 	case <-ctx.Done():
 		return fmt.Errorf("ошибка контекста: %w", ctx.Err())
 	}
@@ -72,7 +83,6 @@ func (a *App) Shutdown(ctx context.Context) {
 		closer.CloseAll(ctx)
 		closer.Wait()
 	}()
-
 	a.srv.Shutdown(ctx)
 }
 
@@ -81,19 +91,16 @@ func (a *App) initCloser() {
 }
 
 func (a *App) initTracer(ctx context.Context) error {
-	var tracingCfg tracer.Config
 	tracingCfg, err := tracer.NewConfig(
 		a.config.TracerDSN,
 		tracer.WithAppName(a.config.ServiceName),
 		tracer.WithEnvironment(a.config.Env),
 	)
-
 	if err != nil {
 		return fmt.Errorf("ошибка при создании конфигурации трейсинга: %w", err)
 	}
 
-	var traceCloser tracer.ShutdownFn
-	traceCloser, err = tracer.InitDefaultProvider(tracingCfg)
+	traceCloser, err := tracer.InitDefaultProvider(tracingCfg)
 	if err != nil {
 		return fmt.Errorf("ошибка при инициализации провайдера трейсинга: %w", err)
 	}
@@ -103,12 +110,15 @@ func (a *App) initTracer(ctx context.Context) error {
 	})
 
 	a.logger.Info(ctx, "Трейсинг инициализирован")
-
 	return nil
 }
 
 func (a *App) initDatabaseConnection(ctx context.Context) error {
-	db, err := sqlext.OpenSqlxViaPgxConnPool(ctx, a.config.DatabaseDSN, sqlext.WithTracerProvider(tracer.GetTraceProvider()))
+	db, err := sqlext.OpenSqlxViaPgxConnPool(
+		ctx,
+		a.config.DatabaseDSN,
+		sqlext.WithTracerProvider(tracer.GetTraceProvider()),
+	)
 	if err != nil {
 		return fmt.Errorf("ошибка при создании подключения к базе данных: %w", err)
 	}
@@ -118,7 +128,6 @@ func (a *App) initDatabaseConnection(ctx context.Context) error {
 		if err := db.Close(); err != nil {
 			return fmt.Errorf("ошибка при закрытии подключения к базе данных: %w", err)
 		}
-
 		return nil
 	})
 
@@ -127,6 +136,5 @@ func (a *App) initDatabaseConnection(ctx context.Context) error {
 	}
 
 	a.logger.Info(ctx, "Подключение к базе данных успешно установлено")
-
 	return nil
 }
