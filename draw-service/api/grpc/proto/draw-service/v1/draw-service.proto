@@ -7,13 +7,48 @@ import "google/api/annotations.proto";
 option go_package = "draw_service/v1";
 
 service DrawService {
-  rpc Echo(EchoRequest) returns (EchoResponse);
+  rpc CreateDraws(CreateDrawRequest) returns (DrawResponse) {
+    option (google.api.http) = {
+      post: "/api/admin/draws"
+      body: "*"
+    };
+  }
+
+  rpc GetDrawsList(GetDrawsRequest) returns (GetDrawsResponse) {
+    option (google.api.http) = {
+      get: "/api/draws/active"
+    };
+  }
+
+  rpc CancelDraw(CancelDrawRequest) returns (CancelDrawResponse) {
+    option (google.api.http) = {
+      put: "/api/admin/draws/{id}/cancel"
+      body: "*"
+    };
+  }
 }
 
-message EchoRequest {
-  string message = 1;
+message CreateDrawRequest {
+  string lottery_type = 1; 
+  string start_time = 2;    // RFC3339
 }
 
-message EchoResponse {
-  string message = 1;
+message DrawResponse {
+  int32 id = 1;            
+  string lottery_type = 2;
+  string start_time = 3;   
+  string end_time = 4;     
+  string status = 5;      
 }
+
+message GetDrawsRequest {}
+
+message GetDrawsResponse {
+  repeated DrawResponse draws = 1;
+}
+
+message CancelDrawRequest {
+  int64 id = 1; 
+}
+
+message CancelDrawResponse {}

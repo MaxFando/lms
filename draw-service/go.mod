@@ -3,12 +3,16 @@ module github.com/MaxFando/lms/draw-service
 go 1.23.8
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/MaxFando/lms/platform/closer v0.0.0-20250416211236-1e46c0b76245
 	github.com/MaxFando/lms/platform/logger v0.0.0-20250416211236-1e46c0b76245
 	github.com/MaxFando/lms/platform/sqlext v0.0.0-20250416211236-1e46c0b76245
 	github.com/MaxFando/lms/platform/tracer v0.0.0-20250416211236-1e46c0b76245
+	github.com/go-redis/redismock/v9 v9.2.0
 	github.com/jmoiron/sqlx v1.4.0
+	github.com/redis/go-redis/v9 v9.8.0
 	github.com/spf13/viper v1.20.1
+	github.com/stretchr/testify v1.10.0
 	go.uber.org/mock v0.5.2
 	google.golang.org/genproto/googleapis/api v0.0.0-20250218202821-56aae31c358a
 	google.golang.org/grpc v1.71.0
@@ -18,6 +22,9 @@ require (
 require (
 	github.com/XSAM/otelsql v0.38.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -29,6 +36,7 @@ require (
 	github.com/jackc/pgx/v5 v5.7.4 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.12.0 // indirect
