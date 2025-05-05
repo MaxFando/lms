@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	DrawService_Echo_FullMethodName = "/draw_service.v1.DrawService/Echo"
+	DrawService_Echo_FullMethodName  = "/draw_service.v1.DrawService/Echo"
+	DrawService_Echo2_FullMethodName = "/draw_service.v1.DrawService/Echo2"
 )
 
 // DrawServiceClient is the client API for DrawService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DrawServiceClient interface {
 	Echo(ctx context.Context, in *EchoRequest, opts ...grpc.CallOption) (*EchoResponse, error)
+	Echo2(ctx context.Context, in *EchoRequest, opts ...grpc.CallOption) (*EchoResponse, error)
 }
 
 type drawServiceClient struct {
@@ -47,11 +49,22 @@ func (c *drawServiceClient) Echo(ctx context.Context, in *EchoRequest, opts ...g
 	return out, nil
 }
 
+func (c *drawServiceClient) Echo2(ctx context.Context, in *EchoRequest, opts ...grpc.CallOption) (*EchoResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(EchoResponse)
+	err := c.cc.Invoke(ctx, DrawService_Echo2_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DrawServiceServer is the server API for DrawService service.
 // All implementations must embed UnimplementedDrawServiceServer
 // for forward compatibility.
 type DrawServiceServer interface {
 	Echo(context.Context, *EchoRequest) (*EchoResponse, error)
+	Echo2(context.Context, *EchoRequest) (*EchoResponse, error)
 	mustEmbedUnimplementedDrawServiceServer()
 }
 
@@ -64,6 +77,9 @@ type UnimplementedDrawServiceServer struct{}
 
 func (UnimplementedDrawServiceServer) Echo(context.Context, *EchoRequest) (*EchoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Echo not implemented")
+}
+func (UnimplementedDrawServiceServer) Echo2(context.Context, *EchoRequest) (*EchoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Echo2 not implemented")
 }
 func (UnimplementedDrawServiceServer) mustEmbedUnimplementedDrawServiceServer() {}
 func (UnimplementedDrawServiceServer) testEmbeddedByValue()                     {}
@@ -104,6 +120,24 @@ func _DrawService_Echo_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DrawService_Echo2_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EchoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DrawServiceServer).Echo2(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DrawService_Echo2_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DrawServiceServer).Echo2(ctx, req.(*EchoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DrawService_ServiceDesc is the grpc.ServiceDesc for DrawService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +148,10 @@ var DrawService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Echo",
 			Handler:    _DrawService_Echo_Handler,
+		},
+		{
+			MethodName: "Echo2",
+			Handler:    _DrawService_Echo2_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -9,6 +9,7 @@ require (
 	github.com/MaxFando/lms/platform/tracer v0.0.0-20250416211236-1e46c0b76245
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/spf13/viper v1.20.1
+	go.uber.org/mock v0.5.2
 	google.golang.org/genproto/googleapis/api v0.0.0-20250218202821-56aae31c358a
 	google.golang.org/grpc v1.71.0
 	google.golang.org/protobuf v1.36.5

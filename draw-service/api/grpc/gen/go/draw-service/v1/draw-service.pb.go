@@ -118,9 +118,10 @@ const file_draw_service_v1_draw_service_proto_rawDesc = "" +
 	"\vEchoRequest\x12\x18\n" +
 	"\amessage\x18\x01 \x01(\tR\amessage\"(\n" +
 	"\fEchoResponse\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage2R\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage2\x98\x01\n" +
 	"\vDrawService\x12C\n" +
-	"\x04Echo\x12\x1c.draw_service.v1.EchoRequest\x1a\x1d.draw_service.v1.EchoResponseB\xc5\x01\n" +
+	"\x04Echo\x12\x1c.draw_service.v1.EchoRequest\x1a\x1d.draw_service.v1.EchoResponse\x12D\n" +
+	"\x05Echo2\x12\x1c.draw_service.v1.EchoRequest\x1a\x1d.draw_service.v1.EchoResponseB\xc5\x01\n" +
 	"\x13com.draw_service.v1B\x10DrawServiceProtoP\x01ZCgithub.com/MaxFando/lms/draw-service/draw-service/v1;draw_servicev1\xa2\x02\x03DXX\xaa\x02\x0eDrawService.V1\xca\x02\x0eDrawService\\V1\xe2\x02\x1aDrawService\\V1\\GPBMetadata\xea\x02\x0fDrawService::V1b\x06proto3"
 
 var (
@@ -142,9 +143,11 @@ var file_draw_service_v1_draw_service_proto_goTypes = []any{
 }
 var file_draw_service_v1_draw_service_proto_depIdxs = []int32{
 	0, // 0: draw_service.v1.DrawService.Echo:input_type -> draw_service.v1.EchoRequest
-	1, // 1: draw_service.v1.DrawService.Echo:output_type -> draw_service.v1.EchoResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	0, // 1: draw_service.v1.DrawService.Echo2:input_type -> draw_service.v1.EchoRequest
+	1, // 2: draw_service.v1.DrawService.Echo:output_type -> draw_service.v1.EchoResponse
+	1, // 3: draw_service.v1.DrawService.Echo2:output_type -> draw_service.v1.EchoResponse
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
