@@ -19,16 +19,18 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	DrawService_Echo_FullMethodName  = "/draw_service.v1.DrawService/Echo"
-	DrawService_Echo2_FullMethodName = "/draw_service.v1.DrawService/Echo2"
+	DrawService_CreateDraws_FullMethodName  = "/draw_service.v1.DrawService/CreateDraws"
+	DrawService_GetDrawsList_FullMethodName = "/draw_service.v1.DrawService/GetDrawsList"
+	DrawService_CancelDraw_FullMethodName   = "/draw_service.v1.DrawService/CancelDraw"
 )
 
 // DrawServiceClient is the client API for DrawService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DrawServiceClient interface {
-	Echo(ctx context.Context, in *EchoRequest, opts ...grpc.CallOption) (*EchoResponse, error)
-	Echo2(ctx context.Context, in *EchoRequest, opts ...grpc.CallOption) (*EchoResponse, error)
+	CreateDraws(ctx context.Context, in *CreateDrawRequest, opts ...grpc.CallOption) (*DrawResponse, error)
+	GetDrawsList(ctx context.Context, in *GetDrawsRequest, opts ...grpc.CallOption) (*GetDrawsResponse, error)
+	CancelDraw(ctx context.Context, in *CancelDrawRequest, opts ...grpc.CallOption) (*CancelDrawResponse, error)
 }
 
 type drawServiceClient struct {
@@ -39,20 +41,30 @@ func NewDrawServiceClient(cc grpc.ClientConnInterface) DrawServiceClient {
 	return &drawServiceClient{cc}
 }
 
-func (c *drawServiceClient) Echo(ctx context.Context, in *EchoRequest, opts ...grpc.CallOption) (*EchoResponse, error) {
+func (c *drawServiceClient) CreateDraws(ctx context.Context, in *CreateDrawRequest, opts ...grpc.CallOption) (*DrawResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(EchoResponse)
-	err := c.cc.Invoke(ctx, DrawService_Echo_FullMethodName, in, out, cOpts...)
+	out := new(DrawResponse)
+	err := c.cc.Invoke(ctx, DrawService_CreateDraws_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *drawServiceClient) Echo2(ctx context.Context, in *EchoRequest, opts ...grpc.CallOption) (*EchoResponse, error) {
+func (c *drawServiceClient) GetDrawsList(ctx context.Context, in *GetDrawsRequest, opts ...grpc.CallOption) (*GetDrawsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(EchoResponse)
-	err := c.cc.Invoke(ctx, DrawService_Echo2_FullMethodName, in, out, cOpts...)
+	out := new(GetDrawsResponse)
+	err := c.cc.Invoke(ctx, DrawService_GetDrawsList_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *drawServiceClient) CancelDraw(ctx context.Context, in *CancelDrawRequest, opts ...grpc.CallOption) (*CancelDrawResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CancelDrawResponse)
+	err := c.cc.Invoke(ctx, DrawService_CancelDraw_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,8 +75,9 @@ func (c *drawServiceClient) Echo2(ctx context.Context, in *EchoRequest, opts ...
 // All implementations must embed UnimplementedDrawServiceServer
 // for forward compatibility.
 type DrawServiceServer interface {
-	Echo(context.Context, *EchoRequest) (*EchoResponse, error)
-	Echo2(context.Context, *EchoRequest) (*EchoResponse, error)
+	CreateDraws(context.Context, *CreateDrawRequest) (*DrawResponse, error)
+	GetDrawsList(context.Context, *GetDrawsRequest) (*GetDrawsResponse, error)
+	CancelDraw(context.Context, *CancelDrawRequest) (*CancelDrawResponse, error)
 	mustEmbedUnimplementedDrawServiceServer()
 }
 
@@ -75,11 +88,14 @@ type DrawServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedDrawServiceServer struct{}
 
-func (UnimplementedDrawServiceServer) Echo(context.Context, *EchoRequest) (*EchoResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Echo not implemented")
+func (UnimplementedDrawServiceServer) CreateDraws(context.Context, *CreateDrawRequest) (*DrawResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateDraws not implemented")
 }
-func (UnimplementedDrawServiceServer) Echo2(context.Context, *EchoRequest) (*EchoResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Echo2 not implemented")
+func (UnimplementedDrawServiceServer) GetDrawsList(context.Context, *GetDrawsRequest) (*GetDrawsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDrawsList not implemented")
+}
+func (UnimplementedDrawServiceServer) CancelDraw(context.Context, *CancelDrawRequest) (*CancelDrawResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CancelDraw not implemented")
 }
 func (UnimplementedDrawServiceServer) mustEmbedUnimplementedDrawServiceServer() {}
 func (UnimplementedDrawServiceServer) testEmbeddedByValue()                     {}
@@ -102,38 +118,56 @@ func RegisterDrawServiceServer(s grpc.ServiceRegistrar, srv DrawServiceServer) {
 	s.RegisterService(&DrawService_ServiceDesc, srv)
 }
 
-func _DrawService_Echo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EchoRequest)
+func _DrawService_CreateDraws_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateDrawRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DrawServiceServer).Echo(ctx, in)
+		return srv.(DrawServiceServer).CreateDraws(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DrawService_Echo_FullMethodName,
+		FullMethod: DrawService_CreateDraws_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DrawServiceServer).Echo(ctx, req.(*EchoRequest))
+		return srv.(DrawServiceServer).CreateDraws(ctx, req.(*CreateDrawRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DrawService_Echo2_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EchoRequest)
+func _DrawService_GetDrawsList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDrawsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DrawServiceServer).Echo2(ctx, in)
+		return srv.(DrawServiceServer).GetDrawsList(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DrawService_Echo2_FullMethodName,
+		FullMethod: DrawService_GetDrawsList_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DrawServiceServer).Echo2(ctx, req.(*EchoRequest))
+		return srv.(DrawServiceServer).GetDrawsList(ctx, req.(*GetDrawsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DrawService_CancelDraw_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelDrawRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DrawServiceServer).CancelDraw(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DrawService_CancelDraw_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DrawServiceServer).CancelDraw(ctx, req.(*CancelDrawRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -146,12 +180,16 @@ var DrawService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*DrawServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Echo",
-			Handler:    _DrawService_Echo_Handler,
+			MethodName: "CreateDraws",
+			Handler:    _DrawService_CreateDraws_Handler,
 		},
 		{
-			MethodName: "Echo2",
-			Handler:    _DrawService_Echo2_Handler,
+			MethodName: "GetDrawsList",
+			Handler:    _DrawService_GetDrawsList_Handler,
+		},
+		{
+			MethodName: "CancelDraw",
+			Handler:    _DrawService_CancelDraw_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
