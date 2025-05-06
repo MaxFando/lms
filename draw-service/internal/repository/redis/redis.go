@@ -14,13 +14,13 @@ type Publisher struct {
 	channel string
 }
 
-func NewPublisher(addr, password string, db int, channel string) *Publisher {
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     addr,
-		Password: password,
-		DB:       db,
-	})
+func NewPublisher(connString, channel string) *Publisher {
+	opt, err := redis.ParseURL(connString)
+	if err != nil {
+		panic(err)
+	}
 
+	rdb := redis.NewClient(opt)
 	return &Publisher{
 		client:  rdb,
 		channel: channel,

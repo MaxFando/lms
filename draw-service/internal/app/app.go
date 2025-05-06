@@ -3,8 +3,14 @@ package app
 import (
 	"context"
 	"fmt"
-	"github.com/MaxFando/lms/draw-service/internal/providers"
 	"syscall"
+	"time"
+
+	"github.com/MaxFando/lms/draw-service/internal/providers"
+	"github.com/MaxFando/lms/draw-service/internal/repository/postgres"
+	"github.com/MaxFando/lms/draw-service/internal/repository/redis"
+	"github.com/MaxFando/lms/draw-service/internal/usecase"
+	"github.com/go-co-op/gocron/v2"
 
 	"github.com/MaxFando/lms/platform/closer"
 	"github.com/MaxFando/lms/platform/logger"
@@ -22,6 +28,7 @@ type App struct {
 	config   *config.Config
 	database *sqlx.DB
 	srv      *server.Server
+	s        gocron.Scheduler
 }
 
 func New(cfg *config.Config) *App {
@@ -58,17 +65,47 @@ func (a *App) Init(ctx context.Context) error {
 }
 
 func (a *App) Run(ctx context.Context) error {
-	serviceServer := v1.NewServer()
+	repo := postgres.NewDrawRepository(a.database)
+	queue := redis.NewPublisher(a.config.RedisDSN, a.config.RedisChannelName)
+	usecase := usecase.NewDrawUseCase(repo, queue)
+	serviceServer := v1.NewServer(usecase)
 	srv := server.NewServer(a.logger, serviceServer)
 	srv.Serve(ctx)
 
 	a.srv = srv
+
+	errChan := make(chan error, 1)
+
+	s, err := gocron.NewScheduler()
+	if err != nil {
+		return fmt.Errorf("new scheduler: %w", err)
+	}
+	a.s = s
+
+	jobTask := func() {
+		if err := usecase.UpdateDraws(ctx); err != nil {
+			errChan <- err
+		}
+	}
+
+	_, err = a.s.NewJob(
+		gocron.DurationJob(time.Hour),
+		gocron.NewTask(jobTask),
+	)
+
+	if err != nil {
+		return fmt.Errorf("new job: %w", err)
+	}
+
+	a.s.Start()
 
 	select {
 	case s := <-srv.Notify():
 		return fmt.Errorf("ошибка сервера: %w", s)
 	case <-ctx.Done():
 		return fmt.Errorf("ошибка контекста: %w", ctx.Err())
+	case err := <-errChan:
+		return fmt.Errorf("ошибка кроны: %w", err)
 	}
 }
 

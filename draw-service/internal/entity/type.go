@@ -30,8 +30,8 @@ type Draw struct {
 
 // DrawResult - структура для описания результата тиража
 type DrawResult struct {
-	ID                 int32     `json:"id"`                  // Уникальный идентификатор результата
-	DrawID             int32     `json:"draw_id"`             // Ссылка на тираж
-	WinningCombination string    `json:"winning_combination"` // Выигрышная комбинация чисел
-	ResultTime         time.Time `json:"result_time"`         // Время определения результатов
+	ID                 int32     `json:"id" db:"id"`                                   // Уникальный идентификатор результата
+	DrawID             int32     `json:"draw_id" db:"draw_id"`                         // Ссылка на тираж
+	WinningCombination string    `json:"winning_combination" db:"winning_combination"` // Выигрышная комбинация чисел
+	ResultTime         time.Time `json:"result_time" db:"result_time"`                 // Время определения результатов
 }
