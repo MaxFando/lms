@@ -26,6 +26,7 @@ type CreateDrawRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	LotteryType   string                 `protobuf:"bytes,1,opt,name=lottery_type,json=lotteryType,proto3" json:"lottery_type,omitempty"`
 	StartTime     string                 `protobuf:"bytes,2,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"` // RFC3339
+	EndTime       string                 `protobuf:"bytes,3,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`       //RFC3339
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -70,6 +71,13 @@ func (x *CreateDrawRequest) GetLotteryType() string {
 func (x *CreateDrawRequest) GetStartTime() string {
 	if x != nil {
 		return x.StartTime
+	}
+	return ""
+}
+
+func (x *CreateDrawRequest) GetEndTime() string {
+	if x != nil {
+		return x.EndTime
 	}
 	return ""
 }
@@ -150,26 +158,26 @@ func (x *DrawResponse) GetStatus() string {
 	return ""
 }
 
-type GetDrawsRequest struct {
+type GetDrawsListRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetDrawsRequest) Reset() {
-	*x = GetDrawsRequest{}
+func (x *GetDrawsListRequest) Reset() {
+	*x = GetDrawsListRequest{}
 	mi := &file_draw_service_v1_draw_service_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetDrawsRequest) String() string {
+func (x *GetDrawsListRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetDrawsRequest) ProtoMessage() {}
+func (*GetDrawsListRequest) ProtoMessage() {}
 
-func (x *GetDrawsRequest) ProtoReflect() protoreflect.Message {
+func (x *GetDrawsListRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_draw_service_v1_draw_service_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -181,32 +189,32 @@ func (x *GetDrawsRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetDrawsRequest.ProtoReflect.Descriptor instead.
-func (*GetDrawsRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetDrawsListRequest.ProtoReflect.Descriptor instead.
+func (*GetDrawsListRequest) Descriptor() ([]byte, []int) {
 	return file_draw_service_v1_draw_service_proto_rawDescGZIP(), []int{2}
 }
 
-type GetDrawsResponse struct {
+type GetDrawsListResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Draws         []*DrawResponse        `protobuf:"bytes,1,rep,name=draws,proto3" json:"draws,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetDrawsResponse) Reset() {
-	*x = GetDrawsResponse{}
+func (x *GetDrawsListResponse) Reset() {
+	*x = GetDrawsListResponse{}
 	mi := &file_draw_service_v1_draw_service_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetDrawsResponse) String() string {
+func (x *GetDrawsListResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetDrawsResponse) ProtoMessage() {}
+func (*GetDrawsListResponse) ProtoMessage() {}
 
-func (x *GetDrawsResponse) ProtoReflect() protoreflect.Message {
+func (x *GetDrawsListResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_draw_service_v1_draw_service_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -218,12 +226,12 @@ func (x *GetDrawsResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetDrawsResponse.ProtoReflect.Descriptor instead.
-func (*GetDrawsResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetDrawsListResponse.ProtoReflect.Descriptor instead.
+func (*GetDrawsListResponse) Descriptor() ([]byte, []int) {
 	return file_draw_service_v1_draw_service_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *GetDrawsResponse) GetDraws() []*DrawResponse {
+func (x *GetDrawsListResponse) GetDraws() []*DrawResponse {
 	if x != nil {
 		return x.Draws
 	}
@@ -232,7 +240,7 @@ func (x *GetDrawsResponse) GetDraws() []*DrawResponse {
 
 type CancelDrawRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -267,7 +275,7 @@ func (*CancelDrawRequest) Descriptor() ([]byte, []int) {
 	return file_draw_service_v1_draw_service_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *CancelDrawRequest) GetId() int64 {
+func (x *CancelDrawRequest) GetId() int32 {
 	if x != nil {
 		return x.Id
 	}
@@ -310,33 +318,157 @@ func (*CancelDrawResponse) Descriptor() ([]byte, []int) {
 	return file_draw_service_v1_draw_service_proto_rawDescGZIP(), []int{5}
 }
 
+type GetDrawResultRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetDrawResultRequest) Reset() {
+	*x = GetDrawResultRequest{}
+	mi := &file_draw_service_v1_draw_service_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDrawResultRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDrawResultRequest) ProtoMessage() {}
+
+func (x *GetDrawResultRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_draw_service_v1_draw_service_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDrawResultRequest.ProtoReflect.Descriptor instead.
+func (*GetDrawResultRequest) Descriptor() ([]byte, []int) {
+	return file_draw_service_v1_draw_service_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetDrawResultRequest) GetId() int32 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type GetDrawResultResponse struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	Id                 int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	DrawId             int32                  `protobuf:"varint,2,opt,name=draw_id,json=drawId,proto3" json:"draw_id,omitempty"`
+	WinningCombination string                 `protobuf:"bytes,3,opt,name=winning_combination,json=winningCombination,proto3" json:"winning_combination,omitempty"`
+	ResultTime         string                 `protobuf:"bytes,4,opt,name=result_time,json=resultTime,proto3" json:"result_time,omitempty"` //RFC3339
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *GetDrawResultResponse) Reset() {
+	*x = GetDrawResultResponse{}
+	mi := &file_draw_service_v1_draw_service_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDrawResultResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDrawResultResponse) ProtoMessage() {}
+
+func (x *GetDrawResultResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_draw_service_v1_draw_service_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDrawResultResponse.ProtoReflect.Descriptor instead.
+func (*GetDrawResultResponse) Descriptor() ([]byte, []int) {
+	return file_draw_service_v1_draw_service_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *GetDrawResultResponse) GetId() int32 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *GetDrawResultResponse) GetDrawId() int32 {
+	if x != nil {
+		return x.DrawId
+	}
+	return 0
+}
+
+func (x *GetDrawResultResponse) GetWinningCombination() string {
+	if x != nil {
+		return x.WinningCombination
+	}
+	return ""
+}
+
+func (x *GetDrawResultResponse) GetResultTime() string {
+	if x != nil {
+		return x.ResultTime
+	}
+	return ""
+}
+
 var File_draw_service_v1_draw_service_proto protoreflect.FileDescriptor
 
 const file_draw_service_v1_draw_service_proto_rawDesc = "" +
 	"\n" +
-	"\"draw-service/v1/draw-service.proto\x12\x0fdraw_service.v1\x1a\x1cgoogle/api/annotations.proto\"U\n" +
+	"\"draw-service/v1/draw-service.proto\x12\x0fdraw_service.v1\x1a\x1cgoogle/api/annotations.proto\"p\n" +
 	"\x11CreateDrawRequest\x12!\n" +
 	"\flottery_type\x18\x01 \x01(\tR\vlotteryType\x12\x1d\n" +
 	"\n" +
-	"start_time\x18\x02 \x01(\tR\tstartTime\"\x93\x01\n" +
+	"start_time\x18\x02 \x01(\tR\tstartTime\x12\x19\n" +
+	"\bend_time\x18\x03 \x01(\tR\aendTime\"\x93\x01\n" +
 	"\fDrawResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12!\n" +
 	"\flottery_type\x18\x02 \x01(\tR\vlotteryType\x12\x1d\n" +
 	"\n" +
 	"start_time\x18\x03 \x01(\tR\tstartTime\x12\x19\n" +
 	"\bend_time\x18\x04 \x01(\tR\aendTime\x12\x16\n" +
-	"\x06status\x18\x05 \x01(\tR\x06status\"\x11\n" +
-	"\x0fGetDrawsRequest\"G\n" +
-	"\x10GetDrawsResponse\x123\n" +
+	"\x06status\x18\x05 \x01(\tR\x06status\"\x15\n" +
+	"\x13GetDrawsListRequest\"K\n" +
+	"\x14GetDrawsListResponse\x123\n" +
 	"\x05draws\x18\x01 \x03(\v2\x1d.draw_service.v1.DrawResponseR\x05draws\"#\n" +
 	"\x11CancelDrawRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\"\x14\n" +
-	"\x12CancelDrawResponse2\xec\x02\n" +
-	"\vDrawService\x12m\n" +
-	"\vCreateDraws\x12\".draw_service.v1.CreateDrawRequest\x1a\x1d.draw_service.v1.DrawResponse\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/api/admin/draws\x12n\n" +
-	"\fGetDrawsList\x12 .draw_service.v1.GetDrawsRequest\x1a!.draw_service.v1.GetDrawsResponse\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/api/draws/active\x12~\n" +
+	"\x02id\x18\x01 \x01(\x05R\x02id\"\x14\n" +
+	"\x12CancelDrawResponse\"&\n" +
+	"\x14GetDrawResultRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x05R\x02id\"\x92\x01\n" +
+	"\x15GetDrawResultResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x17\n" +
+	"\adraw_id\x18\x02 \x01(\x05R\x06drawId\x12/\n" +
+	"\x13winning_combination\x18\x03 \x01(\tR\x12winningCombination\x12\x1f\n" +
+	"\vresult_time\x18\x04 \x01(\tR\n" +
+	"resultTime2\xf7\x04\n" +
+	"\vDrawService\x12k\n" +
 	"\n" +
-	"CancelDraw\x12\".draw_service.v1.CancelDrawRequest\x1a#.draw_service.v1.CancelDrawResponse\"'\x82\xd3\xe4\x93\x02!:\x01*\x1a\x1c/api/admin/draws/{id}/cancelB\xc5\x01\n" +
+	"CreateDraw\x12\".draw_service.v1.CreateDrawRequest\x1a\x1d.draw_service.v1.DrawResponse\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/api/admin/draw\x12v\n" +
+	"\fGetDrawsList\x12$.draw_service.v1.GetDrawsListRequest\x1a%.draw_service.v1.GetDrawsListResponse\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/api/draws/active\x12~\n" +
+	"\n" +
+	"CancelDraw\x12\".draw_service.v1.CancelDrawRequest\x1a#.draw_service.v1.CancelDrawResponse\"'\x82\xd3\xe4\x93\x02!:\x01*\x1a\x1c/api/admin/draws/{id}/cancel\x12\x82\x01\n" +
+	"\x15GetCompletedDrawsList\x12$.draw_service.v1.GetDrawsListRequest\x1a%.draw_service.v1.GetDrawsListResponse\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/api/draws/completed\x12~\n" +
+	"\rGetDrawResult\x12%.draw_service.v1.GetDrawResultRequest\x1a&.draw_service.v1.GetDrawResultResponse\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/api/draws/{id}/resultB\xc5\x01\n" +
 	"\x13com.draw_service.v1B\x10DrawServiceProtoP\x01ZCgithub.com/MaxFando/lms/draw-service/draw-service/v1;draw_servicev1\xa2\x02\x03DXX\xaa\x02\x0eDrawService.V1\xca\x02\x0eDrawService\\V1\xe2\x02\x1aDrawService\\V1\\GPBMetadata\xea\x02\x0fDrawService::V1b\x06proto3"
 
 var (
@@ -351,25 +483,31 @@ func file_draw_service_v1_draw_service_proto_rawDescGZIP() []byte {
 	return file_draw_service_v1_draw_service_proto_rawDescData
 }
 
-var file_draw_service_v1_draw_service_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_draw_service_v1_draw_service_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_draw_service_v1_draw_service_proto_goTypes = []any{
-	(*CreateDrawRequest)(nil),  // 0: draw_service.v1.CreateDrawRequest
-	(*DrawResponse)(nil),       // 1: draw_service.v1.DrawResponse
-	(*GetDrawsRequest)(nil),    // 2: draw_service.v1.GetDrawsRequest
-	(*GetDrawsResponse)(nil),   // 3: draw_service.v1.GetDrawsResponse
-	(*CancelDrawRequest)(nil),  // 4: draw_service.v1.CancelDrawRequest
-	(*CancelDrawResponse)(nil), // 5: draw_service.v1.CancelDrawResponse
+	(*CreateDrawRequest)(nil),     // 0: draw_service.v1.CreateDrawRequest
+	(*DrawResponse)(nil),          // 1: draw_service.v1.DrawResponse
+	(*GetDrawsListRequest)(nil),   // 2: draw_service.v1.GetDrawsListRequest
+	(*GetDrawsListResponse)(nil),  // 3: draw_service.v1.GetDrawsListResponse
+	(*CancelDrawRequest)(nil),     // 4: draw_service.v1.CancelDrawRequest
+	(*CancelDrawResponse)(nil),    // 5: draw_service.v1.CancelDrawResponse
+	(*GetDrawResultRequest)(nil),  // 6: draw_service.v1.GetDrawResultRequest
+	(*GetDrawResultResponse)(nil), // 7: draw_service.v1.GetDrawResultResponse
 }
 var file_draw_service_v1_draw_service_proto_depIdxs = []int32{
-	1, // 0: draw_service.v1.GetDrawsResponse.draws:type_name -> draw_service.v1.DrawResponse
-	0, // 1: draw_service.v1.DrawService.CreateDraws:input_type -> draw_service.v1.CreateDrawRequest
-	2, // 2: draw_service.v1.DrawService.GetDrawsList:input_type -> draw_service.v1.GetDrawsRequest
+	1, // 0: draw_service.v1.GetDrawsListResponse.draws:type_name -> draw_service.v1.DrawResponse
+	0, // 1: draw_service.v1.DrawService.CreateDraw:input_type -> draw_service.v1.CreateDrawRequest
+	2, // 2: draw_service.v1.DrawService.GetDrawsList:input_type -> draw_service.v1.GetDrawsListRequest
 	4, // 3: draw_service.v1.DrawService.CancelDraw:input_type -> draw_service.v1.CancelDrawRequest
-	1, // 4: draw_service.v1.DrawService.CreateDraws:output_type -> draw_service.v1.DrawResponse
-	3, // 5: draw_service.v1.DrawService.GetDrawsList:output_type -> draw_service.v1.GetDrawsResponse
-	5, // 6: draw_service.v1.DrawService.CancelDraw:output_type -> draw_service.v1.CancelDrawResponse
-	4, // [4:7] is the sub-list for method output_type
-	1, // [1:4] is the sub-list for method input_type
+	2, // 4: draw_service.v1.DrawService.GetCompletedDrawsList:input_type -> draw_service.v1.GetDrawsListRequest
+	6, // 5: draw_service.v1.DrawService.GetDrawResult:input_type -> draw_service.v1.GetDrawResultRequest
+	1, // 6: draw_service.v1.DrawService.CreateDraw:output_type -> draw_service.v1.DrawResponse
+	3, // 7: draw_service.v1.DrawService.GetDrawsList:output_type -> draw_service.v1.GetDrawsListResponse
+	5, // 8: draw_service.v1.DrawService.CancelDraw:output_type -> draw_service.v1.CancelDrawResponse
+	3, // 9: draw_service.v1.DrawService.GetCompletedDrawsList:output_type -> draw_service.v1.GetDrawsListResponse
+	7, // 10: draw_service.v1.DrawService.GetDrawResult:output_type -> draw_service.v1.GetDrawResultResponse
+	6, // [6:11] is the sub-list for method output_type
+	1, // [1:6] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
 	1, // [1:1] is the sub-list for extension extendee
 	0, // [0:1] is the sub-list for field type_name
@@ -386,7 +524,7 @@ func file_draw_service_v1_draw_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_draw_service_v1_draw_service_proto_rawDesc), len(file_draw_service_v1_draw_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
