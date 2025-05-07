@@ -7,7 +7,7 @@ import "google/api/annotations.proto";
 option go_package = "draw_service/v1";
 
 service DrawService {
-  rpc CreateDraw(CreateDrawRequest) returns (CreateDrawResponse) {
+  rpc CreateDraw(CreateDrawRequest) returns (DrawResponse) {
     option (google.api.http) = {
       post: "/api/admin/draw"
       body: "*"
@@ -46,7 +46,7 @@ message CreateDrawRequest {
   string end_time = 3; //RFC3339
 }
 
-message CreateDrawResponse {
+message DrawResponse {
   int32 id = 1;            
   string lottery_type = 2;
   string start_time = 3;   
