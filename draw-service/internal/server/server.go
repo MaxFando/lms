@@ -63,16 +63,12 @@ func (s *Server) Serve(ctx context.Context) {
 		case <-httpDone:
 		}
 	}()
-
-	<-grpcDone
-	<-httpDone
 }
 
 func (s *Server) Shutdown(ctx context.Context) {
 	s.logger.Info(ctx, "Завершение работы сервера")
 
 	s.grpcServer.GracefulStop()
-	close(s.errors)
 }
 
 func (s *Server) Notify() <-chan error {

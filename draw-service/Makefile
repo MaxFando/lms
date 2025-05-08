@@ -4,8 +4,8 @@ LOCAL_BIN := $(shell pwd)/bin
 appName = structura
 compose = docker-compose -f docker-compose-debug.yml -p $(appName)
 
-DB_DSN = postgresql://postgres:postgres@localhost:5432/structura?sslmode=disable
-DB_MIGRATION_DSN = postgresql://postgres:postgres@localhost:5432/structura?search_path=main
+DB_DSN = postgresql://postgres:postgres@localhost:5432/lms?sslmode=disable
+DB_MIGRATION_DSN = postgresql://postgres:postgres@localhost:5432/lms?search_path=draw
 
 PHONY: install-lint install-deps db-create-migration db-migrate db-rollback lint lint-fix test generate generate-proto lint-proto lock-proto
 

@@ -3,17 +3,68 @@ syntax = "proto3";
 package draw_service.v1;
 
 import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 
 option go_package = "draw_service/v1";
 
 service DrawService {
-  rpc Echo(EchoRequest) returns (EchoResponse);
+  rpc CreateDraw(CreateDrawRequest) returns (DrawResponse) {
+    option (google.api.http) = {
+      post: "/api/admin/draw"
+      body: "*"
+    };
+  }
+
+  rpc GetDrawsList(google.protobuf.Empty) returns (GetDrawsListResponse) {
+    option (google.api.http) = {get: "/api/draws/active"};
+  }
+
+  rpc CancelDraw(CancelDrawRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/api/admin/draws/{id}/cancel"
+      body: "*"
+    };
+  }
+
+  rpc GetCompletedDrawsList(google.protobuf.Empty) returns (GetDrawsListResponse) {
+    option (google.api.http) = {get: "/api/draws/completed"};
+  }
+
+  rpc GetDrawResult(GetDrawResultRequest) returns (GetDrawResultResponse) {
+    option (google.api.http) = {get: "/api/draws/{id}/result"};
+  }
 }
 
-message EchoRequest {
-  string message = 1;
+message CreateDrawRequest {
+  string lottery_type = 1;
+  google.protobuf.Timestamp start_time = 2; // RFC3339
+  google.protobuf.Timestamp end_time = 3; //RFC3339
 }
 
-message EchoResponse {
-  string message = 1;
+message DrawResponse {
+  int32 id = 1;
+  string lottery_type = 2;
+  google.protobuf.Timestamp start_time = 3;
+  google.protobuf.Timestamp end_time = 4;
+  string status = 5;
+}
+
+message GetDrawsListResponse {
+  repeated DrawResponse draws = 1;
+}
+
+message CancelDrawRequest {
+  int32 id = 1;
+}
+
+message GetDrawResultRequest {
+  int32 id = 1;
+}
+
+message GetDrawResultResponse {
+  int32 id = 1;
+  int32 draw_id = 2;
+  string winning_combination = 3;
+  google.protobuf.Timestamp result_time = 4; //RFC3339
 }

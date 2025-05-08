@@ -11,5 +11,4 @@ func NewUsecaseProvider(provider *ServiceProvider) *UsecaseProvider {
 }
 
 func (r *UsecaseProvider) RegisterDependencies() {
-
 }

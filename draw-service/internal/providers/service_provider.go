@@ -11,5 +11,4 @@ func NewServiceProvider(provider *RepositoryProvider) *ServiceProvider {
 }
 
 func (r *ServiceProvider) RegisterDependencies() {
-
 }
