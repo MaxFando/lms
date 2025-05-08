@@ -1,5 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
+CREATE SCHEMA IF NOT EXISTS draw;
 
 CREATE TABLE draw.draws (
     id SERIAL PRIMARY KEY,
