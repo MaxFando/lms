@@ -72,7 +72,7 @@ func (s *Server) Shutdown(ctx context.Context) {
 	s.logger.Info(ctx, "Завершение работы сервера")
 
 	s.grpcServer.GracefulStop()
-	close(s.errors)
+	//close(s.errors) паникует
 }
 
 func (s *Server) Notify() <-chan error {
