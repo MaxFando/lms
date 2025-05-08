@@ -5,9 +5,8 @@ import (
 	"net"
 	"time"
 
-	userservicev1 "github.com/MaxFando/lms/user-service/api/grpc/gen/go/user-service/v1"
-
 	"github.com/MaxFando/lms/platform/logger"
+	userservicev1 "github.com/MaxFando/lms/user-service/api/grpc/gen/go/user-service/v1"
 	"github.com/MaxFando/lms/user-service/internal/server/interceptor"
 
 	"google.golang.org/grpc"
@@ -19,84 +18,29 @@ const (
 	defaultGRPCPort         = "50051"
 	defaultKeepAliveTime    = 30 * time.Second
 	defaultKeepAliveTimeout = 20 * time.Second
-
-	defaultMaxRecvMsgSize = 1024 * 1024 * 50 // 50 MB
-	defaultMaxSendMsgSize = 1024 * 1024 * 50 // 50 MB
+	defaultMaxRecvMsgSize   = 50 << 20
+	defaultMaxSendMsgSize   = 50 << 20
 )
 
 type Server struct {
 	grpcServer *grpc.Server
 	logger     logger.Logger
-
-	grpcPort string
-	errors   chan error
+	errors     chan error
+	grpcPort   string
 }
 
-func NewServer(logger logger.Logger, serviceServer userservicev1.UserServiceServer) *Server {
-	srv := new(Server)
-
-	srv.grpcPort = defaultGRPCPort
-	srv.errors = make(chan error, 1)
-	srv.logger = logger
-
-	srv.grpcServer = initGRPCServer(logger, serviceServer)
-	return srv
-}
-
-func (s *Server) Serve(ctx context.Context) {
-	grpcDone := make(chan struct{})
-	httpDone := make(chan struct{})
-
-	go func() {
-		defer close(grpcDone)
-		s.serveGRPC(ctx)
-	}()
-
-	go func() {
-		select {
-		case <-ctx.Done():
-			s.Shutdown(ctx)
-		case <-grpcDone:
-		case <-httpDone:
-		}
-	}()
-
-	<-grpcDone
-	<-httpDone
-}
-
-func (s *Server) Shutdown(ctx context.Context) {
-	s.logger.Info(ctx, "Завершение работы сервера")
-	s.grpcServer.GracefulStop()
-	close(s.errors)
-}
-
-func (s *Server) Notify() <-chan error {
-	errorsCh := make(chan error)
-	go func() {
-		for err := range s.errors {
-			errorsCh <- err
-		}
-		close(errorsCh)
-	}()
-	return errorsCh
-}
-
-func (s *Server) serveGRPC(ctx context.Context) {
-	grpcListener, err := net.Listen("tcp", ":"+s.grpcPort)
-	if err != nil {
-		s.sendError(ctx, err)
-		return
+func NewServer(logger logger.Logger, svcServer userservicev1.UserServiceServer) *Server {
+	s := &Server{
+		logger:   logger,
+		errors:   make(chan error, 1),
+		grpcPort: defaultGRPCPort,
 	}
-
-	s.logger.Info(ctx, "Запуск gRPC сервера на порту "+s.grpcPort)
-	if err := s.grpcServer.Serve(grpcListener); err != nil {
-		s.sendError(ctx, err)
-	}
+	s.grpcServer = initGRPCServer(logger, svcServer)
+	return s
 }
 
-func initGRPCServer(logger logger.Logger, serviceServer userservicev1.UserServiceServer) *grpc.Server {
-	server := grpc.NewServer(
+func initGRPCServer(logger logger.Logger, svcServer userservicev1.UserServiceServer) *grpc.Server {
+	grpcSrv := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			interceptor.PanicRecoveryUnaryInterceptor(logger),
 		),
@@ -108,17 +52,44 @@ func initGRPCServer(logger logger.Logger, serviceServer userservicev1.UserServic
 		}),
 	)
 
-	userservicev1.RegisterUserServiceServer(server, serviceServer)
-	reflection.Register(server)
+	userservicev1.RegisterUserServiceServer(grpcSrv, svcServer)
+	reflection.Register(grpcSrv)
+	return grpcSrv
+}
 
-	return server
+func (s *Server) Serve(ctx context.Context) {
+	lis, err := net.Listen("tcp", ":"+s.grpcPort)
+	if err != nil {
+		s.sendError(ctx, err)
+		return
+	}
+	s.logger.Info(ctx, "gRPC server listening on port "+s.grpcPort)
+	if err := s.grpcServer.Serve(lis); err != nil {
+		s.sendError(ctx, err)
+	}
+}
+
+func (s *Server) Shutdown(ctx context.Context) {
+	s.logger.Info(ctx, "Shutting down gRPC server")
+	s.grpcServer.GracefulStop()
+	close(s.errors)
+}
+
+func (s *Server) Notify() <-chan error {
+	out := make(chan error)
+	go func() {
+		for err := range s.errors {
+			out <- err
+		}
+		close(out)
+	}()
+	return out
 }
 
 func (s *Server) sendError(ctx context.Context, err error) {
 	select {
 	case s.errors <- err:
-		s.logger.Error(ctx, "Error sent to channel", "error", err)
 	default:
-		s.logger.Error(ctx, "Error channel is full, error dropped", "error", err)
+		s.logger.Error(ctx, "error channel full, dropping", "error", err)
 	}
 }
