@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 
-CREATE TABLE draw.draw (
+CREATE TABLE draw.draws (
     id SERIAL PRIMARY KEY,
     lottery_type VARCHAR(50) NOT NULL,
     start_time TIMESTAMPTZ NOT NULL,
@@ -9,9 +9,9 @@ CREATE TABLE draw.draw (
     status VARCHAR(20) NOT NULL CHECK (status IN ('PLANNED', 'ACTIVE', 'COMPLETED', 'CANCELLED'))
 );
 
-CREATE TABLE draw.draw_result (
+CREATE TABLE draw.draw_results (
     id SERIAL PRIMARY KEY,
-    draw_id INTEGER NOT NULL REFERENCES draw.draw(id) ON DELETE CASCADE,
+    draw_id INTEGER NOT NULL REFERENCES draw.draws(id) ON DELETE CASCADE,
     winning_combination TEXT NOT NULL,
     result_time TIMESTAMPTZ NOT NULL
 );
@@ -21,7 +21,7 @@ CREATE TABLE draw.draw_result (
 -- +goose Down
 -- +goose StatementBegin
 
-DROP TABLE IF EXISTS draw.draw_result;
-DROP TABLE IF EXISTS draw.draw;
+DROP TABLE IF EXISTS draw.draw_results;
+DROP TABLE IF EXISTS draw.draws;
 -- +goose StatementEnd
 

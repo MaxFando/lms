@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/MaxFando/lms/draw-service/internal/entity"
 	"github.com/MaxFando/lms/platform/logger"
+
+	"github.com/MaxFando/lms/draw-service/internal/entity"
 )
 
 type DrawUseCase struct {
@@ -52,39 +53,39 @@ func (uc *DrawUseCase) GetDrawsList(ctx context.Context) ([]*entity.Draw, error)
 
 // CancelDraw - Отмена тиража
 func (uc *DrawUseCase) CancelDraw(ctx context.Context, id int32) error {
-	uc.log.Info(ctx, "canceling draw", "draw_id", id)
+	log := uc.log.With("method", "CancelDraw", "draw_id", id)
 
 	txCtx, err := uc.drawRepo.BeginTransaction(ctx)
 	if err != nil {
-		uc.log.Error(ctx, "failed to begin transaction", "error", err)
+		log.Error(ctx, "failed to begin transaction", "error", err)
 		return fmt.Errorf("start transaction: %w", err)
 	}
 	defer uc.drawRepo.RollbackTransaction(txCtx)
 
 	draw, err := uc.drawRepo.CancelDraw(txCtx, id)
 	if err != nil {
-		uc.log.Error(ctx, "failed to cancel draw", "error", err, "draw_id", id)
+		log.Error(ctx, "failed to cancel draw", "error", err, "draw_id", id)
 		return fmt.Errorf("cancel draw: %w", err)
 	}
 
-	err = uc.drawQueue.PublishDraw(ctx, draw)
+	err = uc.drawQueue.PublishDraw(ctx, draw, entity.EventTypeDrawCancelled)
 	if err != nil {
-		uc.log.Error(ctx, "failed to publish cancelled draw", "error", err, "draw_id", id)
+		log.Error(ctx, "failed to publish cancelled draw", "error", err, "draw_id", id)
 		return fmt.Errorf("publish draw: %w", err)
 	}
 
 	err = uc.drawRepo.CommitTransaction(txCtx)
 	if err != nil {
-		uc.log.Error(ctx, "failed to commit transaction", "error", err)
+		log.Error(ctx, "failed to commit transaction", "error", err)
 		return fmt.Errorf("commit transaction: %w", err)
 	}
 
-	uc.log.Info(ctx, "draw cancelled successfully", "draw_id", id)
+	log.Info(ctx, "draw cancelled successfully", "draw_id", id)
 	return nil
 }
 
-// UpdateDraws - Обновление статусов тиражей
-func (uc *DrawUseCase) UpdateDraws(ctx context.Context) error {
+// MarkDrawsAsActive - Активация тиражей
+func (uc *DrawUseCase) MarkDrawsAsActive(ctx context.Context) error {
 	uc.log.Info(ctx, "updating draws statuses")
 
 	txCtx, err := uc.drawRepo.BeginTransaction(ctx)
@@ -100,17 +101,47 @@ func (uc *DrawUseCase) UpdateDraws(ctx context.Context) error {
 		return fmt.Errorf("activate draws: %w", err)
 	}
 
+	for _, draw := range active {
+		err := uc.drawQueue.PublishDraw(ctx, draw, entity.EventTypeDrawActivated)
+		if err != nil {
+			uc.log.Error(ctx, "failed to publish draw update", "draw_id", draw.ID, "error", err)
+
+			return fmt.Errorf("publish draw: %w", err)
+		}
+	}
+
+	err = uc.drawRepo.CommitTransaction(txCtx)
+	if err != nil {
+		uc.log.Error(ctx, "failed to commit transaction", "error", err)
+
+		return fmt.Errorf("commit transaction: %w", err)
+	}
+
+	uc.log.Info(ctx, "draws updated successfully", "activated", len(active))
+
+	return nil
+}
+
+// MarkDrawsAsCompleted - Завершение тиражей
+func (uc *DrawUseCase) MarkDrawsAsCompleted(ctx context.Context) error {
+	uc.log.Info(ctx, "updating draws statuses")
+
+	txCtx, err := uc.drawRepo.BeginTransaction(ctx)
+	if err != nil {
+		uc.log.Error(ctx, "failed to begin transaction", "error", err)
+
+		return fmt.Errorf("start transaction: %w", err)
+	}
+	defer uc.drawRepo.RollbackTransaction(txCtx)
+
 	completed, err := uc.drawRepo.CompleteDraws(txCtx)
 	if err != nil {
 		uc.log.Error(ctx, "failed to complete draws", "error", err)
 		return fmt.Errorf("complete draws: %w", err)
 	}
 
-	allDraws := append(active, completed...)
-	uc.log.Info(ctx, "publishing updated draws", "total", len(allDraws))
-
-	for _, draw := range allDraws {
-		err := uc.drawQueue.PublishDraw(ctx, draw)
+	for _, draw := range completed {
+		err := uc.drawQueue.PublishDraw(ctx, draw, entity.EventTypeDrawCompleted)
 		if err != nil {
 			uc.log.Error(ctx, "failed to publish draw update", "draw_id", draw.ID, "error", err)
 			return fmt.Errorf("publish draw: %w", err)
@@ -123,7 +154,7 @@ func (uc *DrawUseCase) UpdateDraws(ctx context.Context) error {
 		return fmt.Errorf("commit transaction: %w", err)
 	}
 
-	uc.log.Info(ctx, "draws updated successfully", "activated", len(active), "completed", len(completed))
+	uc.log.Info(ctx, "draws updated successfully", "completed", len(completed))
 	return nil
 }
 

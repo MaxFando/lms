@@ -27,7 +27,7 @@ func TestPublisher_PublishDraw(t *testing.T) {
 		LotteryType: "5 from 36",
 		StartTime:   time.Now(),
 		EndTime:     time.Now().Add(1 * time.Hour),
-		Status:      "ACTIVE",
+		Status:      entity.StatusActive,
 	}
 
 	data, err := json.Marshal(draw)
@@ -35,7 +35,7 @@ func TestPublisher_PublishDraw(t *testing.T) {
 
 	mock.ExpectPublish(channel, data).SetVal(1)
 
-	err = publisher.PublishDraw(ctx, draw)
+	err = publisher.PublishDraw(ctx, draw, entity.EventTypeDrawActivated)
 	assert.NoError(t, err)
 
 	assert.NoError(t, mock.ExpectationsWereMet())

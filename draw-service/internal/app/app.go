@@ -67,7 +67,10 @@ func (a *App) Init(ctx context.Context) error {
 
 func (a *App) Run(ctx context.Context) error {
 	repo := postgres.NewDrawRepository(a.database)
-	queue := redis.NewPublisher(a.config.RedisDSN, a.config.RedisChannelName)
+	queue, err := redis.NewPublisher(a.config.RedisDSN, a.config.RedisChannelName)
+	if err != nil {
+		return fmt.Errorf("ошибка при создании клиента Redis: %w", err)
+	}
 	usecase := usecase.NewDrawUseCase(repo, queue)
 	serviceServer := v1.NewServer(usecase)
 	srv := server.NewServer(a.logger, serviceServer)
@@ -80,7 +83,11 @@ func (a *App) Run(ctx context.Context) error {
 	errChan := make(chan error, 1)
 
 	go func() {
-		errChan <- scheduler.Schedule(ctx, usecase.UpdateDraws, time.Hour)
+		errChan <- scheduler.Schedule(ctx, usecase.MarkDrawsAsActive, time.Hour)
+	}()
+
+	go func() {
+		errChan <- scheduler.Schedule(ctx, usecase.MarkDrawsAsCompleted, time.Hour)
 	}()
 
 	select {
@@ -91,12 +98,6 @@ func (a *App) Run(ctx context.Context) error {
 	case err := <-errChan:
 		return fmt.Errorf("ошибка кроны: %w", err)
 	}
-
-	/*errChan := make(chan error, 1)
-	select {
-	case err := <-errChan:
-		return err
-	}*/
 }
 
 func (a *App) Shutdown(ctx context.Context) {

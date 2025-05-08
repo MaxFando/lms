@@ -14,21 +14,30 @@ type Publisher struct {
 	channel string
 }
 
-func NewPublisher(connString, channel string) *Publisher {
+func NewPublisher(connString, channel string) (*Publisher, error) {
 	opt, err := redis.ParseURL(connString)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("parse url: %w", err)
 	}
 
 	rdb := redis.NewClient(opt)
 	return &Publisher{
 		client:  rdb,
 		channel: channel,
-	}
+	}, nil
 }
 
-func (p *Publisher) PublishDraw(ctx context.Context, draw *entity.Draw) error {
-	data, err := json.Marshal(draw)
+func (p *Publisher) PublishDraw(ctx context.Context, draw *entity.Draw, eventType entity.EventType) error {
+	type event struct {
+		Type entity.EventType `json:"type"`
+		Draw *entity.Draw     `json:"draw"`
+	}
+
+	data, err := json.Marshal(event{
+		Type: eventType,
+		Draw: draw,
+	})
+
 	if err != nil {
 		return fmt.Errorf("marshal: %w", err)
 	}

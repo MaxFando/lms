@@ -38,9 +38,9 @@ func TestCreateDraw(t *testing.T) {
 	}
 
 	mock.ExpectQuery("INSERT INTO draw.draw \\(lottery_type, start_time, end_time, status\\) VALUES \\(\\$1, \\$2, \\$3, \\$4\\) RETURNING id, lottery_type, start_time, end_time, status").
-		WithArgs(draw.LotteryType, draw.StartTime, draw.EndTime, "PLANNED").
+		WithArgs(draw.LotteryType, draw.StartTime, draw.EndTime, entity.StatusPlanned).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "lottery_type", "start_time", "end_time", "status"}).
-			AddRow(1, draw.LotteryType, draw.StartTime, draw.EndTime, "PLANNED"))
+			AddRow(1, draw.LotteryType, draw.StartTime, draw.EndTime, entity.StatusPlanned))
 
 	createdDraw, err := repo.CreateDraw(context.Background(), draw)
 	assert.NoError(t, err)
@@ -61,12 +61,12 @@ func TestGetActiveDraws(t *testing.T) {
 	moscowLocation, _ := time.LoadLocation("Europe/Moscow")
 
 	draws := []*entity.Draw{
-		{ID: 1, LotteryType: "5 from 36", StartTime: time.Date(2025, time.May, 5, 10, 0, 0, 0, moscowLocation), EndTime: time.Now().Add(1 * time.Hour), Status: "ACTIVE"},
-		{ID: 2, LotteryType: "6 from 49", StartTime: time.Date(2025, time.May, 5, 11, 0, 0, 0, moscowLocation), EndTime: time.Now().Add(1 * time.Hour), Status: "ACTIVE"},
+		{ID: 1, LotteryType: "5 from 36", StartTime: time.Date(2025, time.May, 5, 10, 0, 0, 0, moscowLocation), EndTime: time.Now().Add(1 * time.Hour), Status: entity.StatusActive},
+		{ID: 2, LotteryType: "6 from 49", StartTime: time.Date(2025, time.May, 5, 11, 0, 0, 0, moscowLocation), EndTime: time.Now().Add(1 * time.Hour), Status: entity.StatusActive},
 	}
 
 	mock.ExpectQuery(`SELECT id, lottery_type, start_time, end_time, status FROM draw.draw WHERE status = \$1`).
-		WithArgs("ACTIVE").
+		WithArgs(entity.StatusActive).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "lottery_type", "start_time", "end_time", "status"}).
 			AddRow(draws[0].ID, draws[0].LotteryType, draws[0].StartTime, draws[0].EndTime, draws[0].Status).
 			AddRow(draws[1].ID, draws[1].LotteryType, draws[1].StartTime, draws[1].EndTime, draws[1].Status))
@@ -117,8 +117,8 @@ func TestActivateDraws(t *testing.T) {
 	now := time.Now().In(moscowLocation).Truncate(time.Millisecond)
 
 	activatedDraws := []*entity.Draw{
-		{ID: 1, LotteryType: "5 from 36", StartTime: now.Add(-1 * time.Hour), EndTime: now.Add(1 * time.Hour), Status: "ACTIVE"},
-		{ID: 2, LotteryType: "6 from 49", StartTime: now.Add(-2 * time.Hour), EndTime: now.Add(2 * time.Hour), Status: "ACTIVE"},
+		{ID: 1, LotteryType: "5 from 36", StartTime: now.Add(-1 * time.Hour), EndTime: now.Add(1 * time.Hour), Status: entity.StatusActive},
+		{ID: 2, LotteryType: "6 from 49", StartTime: now.Add(-2 * time.Hour), EndTime: now.Add(2 * time.Hour), Status: entity.StatusActive},
 	}
 
 	mock.ExpectQuery(`UPDATE draw\.draw\s+SET status = 'ACTIVE'\s+WHERE status = 'PLANNED' AND start_time <= \$1\s+RETURNING id, lottery_type, start_time, end_time, status`).
