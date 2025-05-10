@@ -22,43 +22,49 @@ func NewTransactionManager(db *sqlx.DB) *TransactionManager {
 
 // RunTransaction выполняет переданную функцию в пределах транзакции. В случае ошибки инициирует откат изменений.
 func (tm *TransactionManager) RunTransaction(ctx context.Context, fn transaction.AtomicFn, opts ...transaction.TxOption) error {
-	tx, ok := transaction.GetTx(ctx)
-	if ok {
+	tx, exists := transaction.GetTx(ctx)
+	if exists {
 		return tm.runInternalTransaction(ctx, tx, fn)
 	}
 
-	if _, ok := ctx.Deadline(); !ok {
+	// Учет таймаутов в контексте
+	deadline, ok := ctx.Deadline()
+	if !ok || time.Until(deadline) > 50*time.Second {
 		var cancel context.CancelFunc
 		ctx, cancel = context.WithTimeout(ctx, 50*time.Second)
 		defer cancel()
 	}
 
+	// Настройка sql.TxOptions
 	o := new(sql.TxOptions)
 	for _, opt := range opts {
 		opt(o)
 	}
 
+	// Начало транзакции
 	tx, err := tm.db.BeginTxx(ctx, o)
 	if err != nil {
 		return fmt.Errorf("error starting transaction: %w", err)
 	}
+	defer func() {
+		if p := recover(); p != nil {
+			_ = tx.Rollback()
+			panic(p)
+		}
+	}()
 
+	// Вызов переданной функции
 	if err := fn(context.WithValue(ctx, transaction.TxKey, tx)); err != nil {
 		if rollbackErr := tx.Rollback(); rollbackErr != nil {
 			return fmt.Errorf("error rolling back transaction: %w", rollbackErr)
 		}
-
 		return fmt.Errorf("error executing transaction: %w", err)
 	}
 
+	// Завершение транзакции
 	if err := tx.Commit(); err != nil {
-		if rollbackErr := tx.Rollback(); rollbackErr != nil {
-			return fmt.Errorf("error rolling back transaction: %w", rollbackErr)
-		}
-
 		return fmt.Errorf("error committing transaction: %w", err)
 	}
-
 	return nil
 }
 
