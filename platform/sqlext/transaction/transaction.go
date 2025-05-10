@@ -8,7 +8,9 @@ import (
 )
 
 // TxKeyType представляет собой пустую структуру, используемую для идентификации уникального ключа транзакции в контексте.
-type TxKeyType struct{}
+type TxKeyType struct {
+	identity bool
+}
 
 // TxKey используется как ключ для хранения и извлечения объекта транзакции из контекста.
 var TxKey = &TxKeyType{}
