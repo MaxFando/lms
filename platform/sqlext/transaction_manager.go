@@ -3,6 +3,7 @@ package sqlext
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/MaxFando/lms/platform/sqlext/transaction"
 	"time"
 
@@ -39,17 +40,26 @@ func (tm *TransactionManager) RunTransaction(ctx context.Context, fn transaction
 
 	tx, err := tm.db.BeginTxx(ctx, o)
 	if err != nil {
-		return err
+		return fmt.Errorf("error starting transaction: %w", err)
 	}
 
 	if err := fn(context.WithValue(ctx, transaction.TxKey, tx)); err != nil {
 		if rollbackErr := tx.Rollback(); rollbackErr != nil {
-			return rollbackErr
+			return fmt.Errorf("error rolling back transaction: %w", rollbackErr)
 		}
-		return err
+
+		return fmt.Errorf("error executing transaction: %w", err)
 	}
 
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		if rollbackErr := tx.Rollback(); rollbackErr != nil {
+			return fmt.Errorf("error rolling back transaction: %w", rollbackErr)
+		}
+
+		return fmt.Errorf("error committing transaction: %w", err)
+	}
+
+	return nil
 }
 
 // runInternalTransaction выполняет операцию в рамках внутренней транзакции с использованием savepoint.
