@@ -54,11 +54,14 @@ func (tm *TransactionManager) RunTransaction(ctx context.Context, fn transaction
 	}()
 
 	// Вызов переданной функции
-	if err := fn(context.WithValue(ctx, transaction.TxKey, tx)); err != nil {
+	if err = fn(context.WithValue(ctx, transaction.TxKey, tx)); err != nil {
+		originalError := fmt.Errorf("error executing transaction function: %w", err)
+
 		if rollbackErr := tx.Rollback(); rollbackErr != nil {
-			return fmt.Errorf("error rolling back transaction: %w", rollbackErr)
+			return fmt.Errorf("error rolling back transaction: rollback error: %w, original error: %w", rollbackErr, originalError)
 		}
-		return fmt.Errorf("error executing transaction: %w", err)
+
+		return originalError
 	}
 
 	// Завершение транзакции
