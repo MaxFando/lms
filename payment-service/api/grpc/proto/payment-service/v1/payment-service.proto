@@ -3,17 +3,51 @@ syntax = "proto3";
 package payment_service.v1;
 
 import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "google/type/money.proto";
 
 option go_package = "payment_service/v1";
 
 service PaymentService {
-  rpc Echo(EchoRequest) returns (EchoResponse);
+  rpc CreateInvoice(CreateInvoiceRequest) returns (CreateInvoiceResponse) {
+    option (google.api.http) = {
+      post: "/api/invoice"
+      body: "*"
+    };
+  }
+
+  // Нужна для вызова из ticketService, наружу не торчит.
+  rpc CreateInvoiceInternal(CreateInvoiceRequest) returns (CreateInvoiceResponse) {
+    option (google.api.http) = {
+      post: "/invoice"
+      body: "*"
+    };
+  }
+
+  rpc Pay(PayRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/pay"
+      body: "*"
+    };
+  }
 }
 
-message EchoRequest {
-  string message = 1;
+message CreateInvoiceRequest {
+  int64 user_id = 1;
+  int64 ticket_id = 2;
 }
 
-message EchoResponse {
-  string message = 1;
+message CreateInvoiceResponse {
+  int64 id = 1;
+  google.type.Money price = 2;
 }
+
+message PayRequest {
+  int64 user_id = 1;
+  int64 invoice_id = 2;
+  string card_number = 3;
+  string exp_date = 4;
+  string CVV = 5;
+}
+
