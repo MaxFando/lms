@@ -80,7 +80,7 @@ func (a *App) Run(ctx context.Context) error {
 
 	errChan := make(chan error, 1)
 	go func() {
-		errChan <- scheduler.Schedule(ctx, a.service.ProcessInvoices, time.Minute)
+		errChan <- scheduler.Schedule(ctx, a.service.ProcessInvoices, time.Hour)
 	}()
 
 	select {

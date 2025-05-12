@@ -16,7 +16,7 @@ db-migrate-user:
 	GOOSE_DRIVER=postgres GOOSE_DBSTRING=$(USER_MIGRATION_DSN) $(LOCAL_BIN)/goose -dir ./user-service/migrations up
 
 db-migrate-payment:
-	GOOSE_DRIVER=postgres GOOSE_DBSTRING=$(PAYMENT_MIGRATION_DSN) $(LOCAL_BIN)/goose -dir ./user-service/migrations up
+	GOOSE_DRIVER=postgres GOOSE_DBSTRING=$(PAYMENT_MIGRATION_DSN) $(LOCAL_BIN)/goose -dir ./payment-service/migrations up
 
 
 up: install-deps down build
@@ -25,6 +25,7 @@ up: install-deps down build
 	@echo "Docker images built and started!"
 	make db-migrate-draw
 	make db-migrate-user
+	make db-migrate-payment
 	@echo "DB migrated!"
 
 build:
