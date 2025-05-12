@@ -8,8 +8,11 @@ package payment_servicev1
 
 import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
+	money "google.golang.org/genproto/googleapis/type/money"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
+	_ "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -22,27 +25,28 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type EchoRequest struct {
+type CreateInvoiceRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	TicketId      int64                  `protobuf:"varint,2,opt,name=ticket_id,json=ticketId,proto3" json:"ticket_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *EchoRequest) Reset() {
-	*x = EchoRequest{}
+func (x *CreateInvoiceRequest) Reset() {
+	*x = CreateInvoiceRequest{}
 	mi := &file_payment_service_v1_payment_service_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *EchoRequest) String() string {
+func (x *CreateInvoiceRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*EchoRequest) ProtoMessage() {}
+func (*CreateInvoiceRequest) ProtoMessage() {}
 
-func (x *EchoRequest) ProtoReflect() protoreflect.Message {
+func (x *CreateInvoiceRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_payment_service_v1_payment_service_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -54,58 +58,149 @@ func (x *EchoRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use EchoRequest.ProtoReflect.Descriptor instead.
-func (*EchoRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use CreateInvoiceRequest.ProtoReflect.Descriptor instead.
+func (*CreateInvoiceRequest) Descriptor() ([]byte, []int) {
 	return file_payment_service_v1_payment_service_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *EchoRequest) GetMessage() string {
+func (x *CreateInvoiceRequest) GetUserId() int64 {
 	if x != nil {
-		return x.Message
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *CreateInvoiceRequest) GetTicketId() int64 {
+	if x != nil {
+		return x.TicketId
+	}
+	return 0
+}
+
+type CreateInvoiceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Price         *money.Money           `protobuf:"bytes,2,opt,name=price,proto3" json:"price,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateInvoiceResponse) Reset() {
+	*x = CreateInvoiceResponse{}
+	mi := &file_payment_service_v1_payment_service_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateInvoiceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateInvoiceResponse) ProtoMessage() {}
+
+func (x *CreateInvoiceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_payment_service_v1_payment_service_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateInvoiceResponse.ProtoReflect.Descriptor instead.
+func (*CreateInvoiceResponse) Descriptor() ([]byte, []int) {
+	return file_payment_service_v1_payment_service_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *CreateInvoiceResponse) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *CreateInvoiceResponse) GetPrice() *money.Money {
+	if x != nil {
+		return x.Price
+	}
+	return nil
+}
+
+type PayRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	InvoiceId     int64                  `protobuf:"varint,2,opt,name=invoice_id,json=invoiceId,proto3" json:"invoice_id,omitempty"`
+	CardNumber    string                 `protobuf:"bytes,3,opt,name=card_number,json=cardNumber,proto3" json:"card_number,omitempty"`
+	ExpDate       string                 `protobuf:"bytes,4,opt,name=exp_date,json=expDate,proto3" json:"exp_date,omitempty"`
+	CVV           string                 `protobuf:"bytes,5,opt,name=CVV,proto3" json:"CVV,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PayRequest) Reset() {
+	*x = PayRequest{}
+	mi := &file_payment_service_v1_payment_service_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PayRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PayRequest) ProtoMessage() {}
+
+func (x *PayRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_payment_service_v1_payment_service_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PayRequest.ProtoReflect.Descriptor instead.
+func (*PayRequest) Descriptor() ([]byte, []int) {
+	return file_payment_service_v1_payment_service_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *PayRequest) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *PayRequest) GetInvoiceId() int64 {
+	if x != nil {
+		return x.InvoiceId
+	}
+	return 0
+}
+
+func (x *PayRequest) GetCardNumber() string {
+	if x != nil {
+		return x.CardNumber
 	}
 	return ""
 }
 
-type EchoResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *EchoResponse) Reset() {
-	*x = EchoResponse{}
-	mi := &file_payment_service_v1_payment_service_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *EchoResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*EchoResponse) ProtoMessage() {}
-
-func (x *EchoResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_payment_service_v1_payment_service_proto_msgTypes[1]
+func (x *PayRequest) GetExpDate() string {
 	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
+		return x.ExpDate
 	}
-	return mi.MessageOf(x)
+	return ""
 }
 
-// Deprecated: Use EchoResponse.ProtoReflect.Descriptor instead.
-func (*EchoResponse) Descriptor() ([]byte, []int) {
-	return file_payment_service_v1_payment_service_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *EchoResponse) GetMessage() string {
+func (x *PayRequest) GetCVV() string {
 	if x != nil {
-		return x.Message
+		return x.CVV
 	}
 	return ""
 }
@@ -114,13 +209,26 @@ var File_payment_service_v1_payment_service_proto protoreflect.FileDescriptor
 
 const file_payment_service_v1_payment_service_proto_rawDesc = "" +
 	"\n" +
-	"(payment-service/v1/payment-service.proto\x12\x12payment_service.v1\x1a\x1cgoogle/api/annotations.proto\"'\n" +
-	"\vEchoRequest\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage\"(\n" +
-	"\fEchoResponse\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage2[\n" +
-	"\x0ePaymentService\x12I\n" +
-	"\x04Echo\x12\x1f.payment_service.v1.EchoRequest\x1a .payment_service.v1.EchoResponseB\xe0\x01\n" +
+	"(payment-service/v1/payment-service.proto\x12\x12payment_service.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x17google/type/money.proto\"L\n" +
+	"\x14CreateInvoiceRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1b\n" +
+	"\tticket_id\x18\x02 \x01(\x03R\bticketId\"Q\n" +
+	"\x15CreateInvoiceResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12(\n" +
+	"\x05price\x18\x02 \x01(\v2\x12.google.type.MoneyR\x05price\"\x92\x01\n" +
+	"\n" +
+	"PayRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1d\n" +
+	"\n" +
+	"invoice_id\x18\x02 \x01(\x03R\tinvoiceId\x12\x1f\n" +
+	"\vcard_number\x18\x03 \x01(\tR\n" +
+	"cardNumber\x12\x19\n" +
+	"\bexp_date\x18\x04 \x01(\tR\aexpDate\x12\x10\n" +
+	"\x03CVV\x18\x05 \x01(\tR\x03CVV2\xe7\x02\n" +
+	"\x0ePaymentService\x12}\n" +
+	"\rCreateInvoice\x12(.payment_service.v1.CreateInvoiceRequest\x1a).payment_service.v1.CreateInvoiceResponse\"\x17\x82\xd3\xe4\x93\x02\x11:\x01*\"\f/api/invoice\x12\x81\x01\n" +
+	"\x15CreateInvoiceInternal\x12(.payment_service.v1.CreateInvoiceRequest\x1a).payment_service.v1.CreateInvoiceResponse\"\x13\x82\xd3\xe4\x93\x02\r:\x01*\"\b/invoice\x12R\n" +
+	"\x03Pay\x12\x1e.payment_service.v1.PayRequest\x1a\x16.google.protobuf.Empty\"\x13\x82\xd3\xe4\x93\x02\r:\x01*\"\b/api/payB\xe0\x01\n" +
 	"\x16com.payment_service.v1B\x13PaymentServiceProtoP\x01ZLgithub.com/MaxFando/lms/payment-service/payment-service/v1;payment_servicev1\xa2\x02\x03PXX\xaa\x02\x11PaymentService.V1\xca\x02\x11PaymentService\\V1\xe2\x02\x1dPaymentService\\V1\\GPBMetadata\xea\x02\x12PaymentService::V1b\x06proto3"
 
 var (
@@ -135,19 +243,27 @@ func file_payment_service_v1_payment_service_proto_rawDescGZIP() []byte {
 	return file_payment_service_v1_payment_service_proto_rawDescData
 }
 
-var file_payment_service_v1_payment_service_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_payment_service_v1_payment_service_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_payment_service_v1_payment_service_proto_goTypes = []any{
-	(*EchoRequest)(nil),  // 0: payment_service.v1.EchoRequest
-	(*EchoResponse)(nil), // 1: payment_service.v1.EchoResponse
+	(*CreateInvoiceRequest)(nil),  // 0: payment_service.v1.CreateInvoiceRequest
+	(*CreateInvoiceResponse)(nil), // 1: payment_service.v1.CreateInvoiceResponse
+	(*PayRequest)(nil),            // 2: payment_service.v1.PayRequest
+	(*money.Money)(nil),           // 3: google.type.Money
+	(*emptypb.Empty)(nil),         // 4: google.protobuf.Empty
 }
 var file_payment_service_v1_payment_service_proto_depIdxs = []int32{
-	0, // 0: payment_service.v1.PaymentService.Echo:input_type -> payment_service.v1.EchoRequest
-	1, // 1: payment_service.v1.PaymentService.Echo:output_type -> payment_service.v1.EchoResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	3, // 0: payment_service.v1.CreateInvoiceResponse.price:type_name -> google.type.Money
+	0, // 1: payment_service.v1.PaymentService.CreateInvoice:input_type -> payment_service.v1.CreateInvoiceRequest
+	0, // 2: payment_service.v1.PaymentService.CreateInvoiceInternal:input_type -> payment_service.v1.CreateInvoiceRequest
+	2, // 3: payment_service.v1.PaymentService.Pay:input_type -> payment_service.v1.PayRequest
+	1, // 4: payment_service.v1.PaymentService.CreateInvoice:output_type -> payment_service.v1.CreateInvoiceResponse
+	1, // 5: payment_service.v1.PaymentService.CreateInvoiceInternal:output_type -> payment_service.v1.CreateInvoiceResponse
+	4, // 6: payment_service.v1.PaymentService.Pay:output_type -> google.protobuf.Empty
+	4, // [4:7] is the sub-list for method output_type
+	1, // [1:4] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_payment_service_v1_payment_service_proto_init() }
@@ -161,7 +277,7 @@ func file_payment_service_v1_payment_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_payment_service_v1_payment_service_proto_rawDesc), len(file_payment_service_v1_payment_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

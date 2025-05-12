@@ -34,6 +34,8 @@ services:
     env_file: ./.env
     environment:
       - SERVICE_NAME=payment-service
+      - REDIS_CHANNEL_NAME=invoice_channel
+      - TICKET_PRICE=100
     ports:
       - "50054:50051"
     depends_on:

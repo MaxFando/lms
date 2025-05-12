@@ -3,12 +3,15 @@ package config
 import "github.com/spf13/viper"
 
 type Config struct {
-	ServiceName string
-	Env         string
-	LogLevel    string
-	GRPCPort    string
-	DatabaseDSN string
-	TracerDSN   string
+	ServiceName      string
+	Env              string
+	LogLevel         string
+	GRPCPort         string
+	DatabaseDSN      string
+	TracerDSN        string
+	RedisDSN         string
+	RedisChannelName string
+	TicketPrice      int64
 }
 
 func Load() *Config {
@@ -18,11 +21,14 @@ func Load() *Config {
 	viper.AutomaticEnv()
 
 	return &Config{
-		ServiceName: viper.GetString("SERVICE_NAME"),
-		Env:         viper.GetString("APP_ENV"),
-		LogLevel:    viper.GetString("LOG_LEVEL"),
-		GRPCPort:    viper.GetString("GRPC_PORT"),
-		DatabaseDSN: viper.GetString("DATABASE_DSN"),
-		TracerDSN:   viper.GetString("TRACER_DSN"),
+		ServiceName:      viper.GetString("SERVICE_NAME"),
+		Env:              viper.GetString("APP_ENV"),
+		LogLevel:         viper.GetString("LOG_LEVEL"),
+		GRPCPort:         viper.GetString("GRPC_PORT"),
+		DatabaseDSN:      viper.GetString("DATABASE_DSN"),
+		TracerDSN:        viper.GetString("TRACER_DSN"),
+		RedisDSN:         viper.GetString("REDIS_DSN"),
+		RedisChannelName: viper.GetString("REDIS_CHANNEL_NAME"),
+		TicketPrice:      viper.GetInt64("TICKET_PRICE"),
 	}
 }

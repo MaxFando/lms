@@ -21,7 +21,6 @@ linters:
     - gocyclo
     - gosec
     - goimports
-    - iface
     - mnd
     - nestif
     - nilnil
