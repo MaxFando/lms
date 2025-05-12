@@ -15,8 +15,6 @@ type repo interface {
 	GetPendingInvoices(ctx context.Context) ([]*entity.Invoice, error)
 	SetInvoiceStatus(ctx context.Context, id int64, status entity.InvoiceStatus) error
 	CreatePayment(ctx context.Context, invoiceID int64, status entity.PaymentStatus) (int64, error)
-	GetInvoicePayments(ctx context.Context) ([]*entity.Payment, error)
-	SetPaymentStatus(ctx context.Context, id int64, status entity.PaymentStatus) error
 	BeginTransaction(ctx context.Context) (txContext context.Context, err error)
 	RollbackTransaction(txContext context.Context) (err error)
 	CommitTransaction(txContext context.Context) (err error)
@@ -58,9 +56,9 @@ func New(
 		payer:     payer,
 		repo:      repo,
 		publisher: publisher,
-		log:       logger.NewLogger().With("app", "lms", "component", "draw-service", "layer", "usecase"),
+		log:       logger.NewLogger().With("app", "lms", "component", "payment-service", "layer", "usecase"),
 		cfg:       cfg,
 
-		nowFunc: time.Now,
+		nowFunc: func() time.Time { return time.Now().UTC() },
 	}
 }

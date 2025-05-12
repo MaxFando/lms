@@ -21,6 +21,12 @@ func (s *Service) Pay(ctx context.Context, userId int64, invoiceId int64, card *
 	err = s.processPayment(tx, userId, invoiceId)
 	if err != nil {
 		s.processRollback(tx, transactionID, invoiceId)
+
+		_, rbErr := s.repo.CreatePayment(ctx, invoiceId, entity.PaymentStatusRejected)
+		if rbErr != nil {
+			s.log.Error(ctx, "failed to create payment", "invoiceID", invoiceId, "err", rbErr)
+		}
+
 		return err
 	}
 
@@ -34,6 +40,9 @@ func (s *Service) processPayment(ctx context.Context, userId int64, invoiceId in
 	}
 	if invoice.OwnerID != userId {
 		return errors.New("invoice is not owned by user")
+	}
+	if invoice.Status != entity.InvoiceStatusPending {
+		return errors.New("invoice is not pending")
 	}
 
 	err = s.repo.SetInvoiceStatus(ctx, invoiceId, entity.InvoiceStatusPaid)
@@ -58,10 +67,5 @@ func (s *Service) processRollback(ctx context.Context, transactionID int64, invo
 	rbErr = s.repo.RollbackTransaction(ctx)
 	if rbErr != nil {
 		s.log.Error(ctx, "failed to rollback invoice", "invoiceID", invoiceId, "err", rbErr)
-	}
-
-	_, rbErr = s.repo.CreatePayment(ctx, invoiceId, entity.PaymentStatusRejected)
-	if rbErr != nil {
-		s.log.Error(ctx, "failed to create payment", "invoiceID", invoiceId, "err", rbErr)
 	}
 }

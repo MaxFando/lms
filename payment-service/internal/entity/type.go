@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"database/sql/driver"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"regexp"
@@ -19,7 +21,7 @@ const (
 
 type Invoice struct {
 	ID           int64           `json:"id" db:"id"`
-	Ticket       *Ticket         `json:"ticket" db:"ticket"`
+	Ticket       *Ticket         `json:"ticket_data" db:"ticket_data"`
 	OwnerID      int64           `json:"owner_id" db:"owner_id"`
 	Amount       decimal.Decimal `json:"amount" db:"amount"`
 	Status       InvoiceStatus   `json:"status" db:"status"`
@@ -29,6 +31,22 @@ type Invoice struct {
 
 type Ticket struct {
 	ID int64 `json:"id" db:"id"`
+}
+
+func (t *Ticket) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("invalid type for Ticket: %T", value)
+	}
+	return json.Unmarshal(bytes, t)
+}
+
+func (t *Ticket) Value() (driver.Value, error) {
+	data, err := json.Marshal(t)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal Ticket: %w", err)
+	}
+	return string(data), nil
 }
 
 type PaymentStatus string
@@ -71,7 +89,7 @@ func (c *Card) Validate() error {
 
 	month := c.ExpDate[:2]
 	year := c.ExpDate[3:]
-	expiration, err := time.Parse("01/06", fmt.Sprintf("%s/20%s", month, year))
+	expiration, err := time.Parse("01/06", fmt.Sprintf("%s/%s", month, year))
 	if err != nil {
 		return errors.New("failed to parse expiration date")
 	}

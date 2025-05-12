@@ -3,24 +3,23 @@ package app
 import (
 	"context"
 	"fmt"
+	"syscall"
+	"time"
+
+	"github.com/MaxFando/lms/payment-service/config"
 	"github.com/MaxFando/lms/payment-service/internal/client/payment"
 	"github.com/MaxFando/lms/payment-service/internal/client/ticket"
 	"github.com/MaxFando/lms/payment-service/internal/repository/postgres"
 	"github.com/MaxFando/lms/payment-service/internal/repository/redis"
+	"github.com/MaxFando/lms/payment-service/internal/server"
+	v1 "github.com/MaxFando/lms/payment-service/internal/server/service/v1"
 	"github.com/MaxFando/lms/payment-service/internal/service"
 	"github.com/MaxFando/lms/payment-service/pkg/scheduler"
-	"syscall"
-	"time"
-
 	"github.com/MaxFando/lms/platform/closer"
 	"github.com/MaxFando/lms/platform/logger"
 	"github.com/MaxFando/lms/platform/sqlext"
 	"github.com/MaxFando/lms/platform/tracer"
 	"github.com/jmoiron/sqlx"
-
-	"github.com/MaxFando/lms/payment-service/config"
-	"github.com/MaxFando/lms/payment-service/internal/server"
-	v1 "github.com/MaxFando/lms/payment-service/internal/server/service/v1"
 )
 
 type App struct {

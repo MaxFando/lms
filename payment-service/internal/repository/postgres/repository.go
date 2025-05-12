@@ -39,7 +39,7 @@ func (r *PaymentRepository) CreateInvoice(ctx context.Context, invoice *entity.I
 		invoice.DueDate,
 	)
 	if err != nil {
-		return 0, fmt.Errorf("create payment: %w", err)
+		return 0, fmt.Errorf("create invoice: %w", err)
 	}
 
 	return id, nil
@@ -63,14 +63,14 @@ func (r *PaymentRepository) GetInvoiceByID(ctx context.Context, id int64) (*enti
 	query := `
 		SELECT id, owner_id, amount, ticket_data, status, register_time, due_date
 		FROM payment.invoices
-		WHERE id = &1
+		WHERE id = $1
 	`
-	var invoices entity.Invoice
-	if err := r.SelectContext(ctx, &invoices, query, id); err != nil {
-		return nil, fmt.Errorf("get pending invoices: %w", err)
+	var invoice entity.Invoice
+	if err := r.GetContext(ctx, &invoice, query, id); err != nil {
+		return nil, fmt.Errorf("get invoice: %w", err)
 	}
 
-	return &invoices, nil
+	return &invoice, nil
 }
 
 func (r *PaymentRepository) SetInvoiceStatus(ctx context.Context, id int64, status entity.InvoiceStatus) error {
@@ -102,31 +102,4 @@ func (r *PaymentRepository) CreatePayment(ctx context.Context, invoiceID int64, 
 		return 0, fmt.Errorf("create payment: %w", err)
 	}
 	return id, nil
-}
-
-func (r *PaymentRepository) GetInvoicePayments(ctx context.Context) ([]*entity.Payment, error) {
-	query := `
-		SELECT id, invoice_id, status, payment_time
-		FROM payment.payments
-		WHERE id IN (SELECT invoice_id FROM payment.payments)
-	`
-	var payments []*entity.Payment
-	if err := r.SelectContext(ctx, &payments, query); err != nil {
-		return nil, fmt.Errorf("get invoice payments: %w", err)
-	}
-
-	return payments, nil
-}
-
-func (r *PaymentRepository) SetPaymentStatus(ctx context.Context, id int64, status entity.PaymentStatus) error {
-	query := `
-		UPDATE payment.payments
-		SET status = $1
-		WHERE id = $2
-	`
-	if _, err := r.ExecContext(ctx, query, status, id); err != nil {
-		return fmt.Errorf("set payment status: %w", err)
-	}
-
-	return nil
 }

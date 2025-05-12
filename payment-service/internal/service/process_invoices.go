@@ -14,7 +14,7 @@ func (s *Service) ProcessInvoices(ctx context.Context) error {
 
 	now := s.nowFunc()
 	for _, invoice := range pendingInvoices {
-		if invoice.DueDate.Before(now) {
+		if invoice.DueDate.UTC().After(now) {
 			continue
 		}
 
