@@ -43,6 +43,10 @@ func New(cfg *config.Config) *App {
 	}
 }
 
+func (a *App) Logger() logger.Logger {
+	return a.logger
+}
+
 func (a *App) Init(ctx context.Context) error {
 	a.initCloser()
 

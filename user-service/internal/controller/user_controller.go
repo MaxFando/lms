@@ -2,10 +2,9 @@ package controller
 
 import (
 	"context"
+	"github.com/MaxFando/lms/user-service/internal/service"
 
 	userservicev1 "github.com/MaxFando/lms/user-service/api/grpc/gen/go/user-service/v1"
-	"github.com/MaxFando/lms/user-service/internal/service"
-	"github.com/MaxFando/lms/user-service/internal/model"
 )
 
 type UserController struct {

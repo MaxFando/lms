@@ -32,7 +32,7 @@ func (r *PostgresUserRepository) Create(ctx context.Context, user *model.User) (
 	var id int64
 	err := r.db.QueryRowxContext(
 		ctx,
-		`INSERT INTO users (name, password, refresh_token, role)
+		`INSERT INTO consumer.users (name, password, refresh_token, role)
          VALUES ($1, $2, $3, $4) RETURNING id`,
 		user.Name, user.Password, user.RefreshToken, user.Role,
 	).Scan(&id)
@@ -41,7 +41,7 @@ func (r *PostgresUserRepository) Create(ctx context.Context, user *model.User) (
 
 func (r *PostgresUserRepository) FindByName(ctx context.Context, name string) (*model.User, error) {
 	var u model.User
-	err := r.db.GetContext(ctx, &u, "SELECT * FROM users WHERE name=$1", name)
+	err := r.db.GetContext(ctx, &u, "SELECT * FROM consumer.users WHERE name=$1", name)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -50,7 +50,7 @@ func (r *PostgresUserRepository) FindByName(ctx context.Context, name string) (*
 
 func (r *PostgresUserRepository) FindByID(ctx context.Context, id int64) (*model.User, error) {
 	var u model.User
-	err := r.db.GetContext(ctx, &u, "SELECT * FROM users WHERE id=$1", id)
+	err := r.db.GetContext(ctx, &u, "SELECT * FROM consumer.users WHERE id=$1", id)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -59,12 +59,12 @@ func (r *PostgresUserRepository) FindByID(ctx context.Context, id int64) (*model
 
 func (r *PostgresUserRepository) List(ctx context.Context) ([]*model.User, error) {
 	var users []*model.User
-	err := r.db.SelectContext(ctx, &users, "SELECT * FROM users")
+	err := r.db.SelectContext(ctx, &users, "SELECT * FROM consumer.users")
 	return users, err
 }
 
 func (r *PostgresUserRepository) UpdateRefreshToken(ctx context.Context, userID int64, token string) error {
-	_, err := r.db.ExecContext(ctx, "UPDATE users SET refresh_token=$1 WHERE id=$2", token, userID)
+	_, err := r.db.ExecContext(ctx, "UPDATE consumer.users SET refresh_token=$1 WHERE id=$2", token, userID)
 	return err
 }
 
@@ -76,7 +76,7 @@ func (r *PostgresUserRepository) CreateTx(ctx context.Context, tx *sqlx.Tx, user
 	var id int64
 	err := tx.QueryRowxContext(
 		ctx,
-		`INSERT INTO users (name, password, refresh_token, role)
+		`INSERT INTO consumer.users (name, password, refresh_token, role)
          VALUES ($1, $2, $3, $4) RETURNING id`,
 		user.Name, user.Password, user.RefreshToken, user.Role,
 	).Scan(&id)
@@ -84,6 +84,6 @@ func (r *PostgresUserRepository) CreateTx(ctx context.Context, tx *sqlx.Tx, user
 }
 
 func (r *PostgresUserRepository) UpdateRefreshTokenTx(ctx context.Context, tx *sqlx.Tx, userID int64, token string) error {
-	_, err := tx.ExecContext(ctx, "UPDATE users SET refresh_token=$1 WHERE id=$2", token, userID)
+	_, err := tx.ExecContext(ctx, "UPDATE consumer.users SET refresh_token=$1 WHERE id=$2", token, userID)
 	return err
 }
