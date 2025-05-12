@@ -8,9 +8,7 @@ CREATE TABLE IF NOT EXISTS ticket.tickets (
     draw_id     INT         NOT NULL,
     numbers     TEXT[]      NOT NULL,
     status      ticket.ticket_status NOT NULL DEFAULT 'PENDING',
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    CONSTRAINT fk_users   FOREIGN KEY(user_id) REFERENCES user.users(id),
-    CONSTRAINT fk_draws   FOREIGN KEY(draw_id) REFERENCES draw.draws(id)
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_tickets_user_draw ON ticket.tickets(user_id, draw_id);

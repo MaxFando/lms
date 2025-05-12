@@ -14,5 +14,10 @@ plugins:
   - remote: buf.build/grpc/go:v1.5.1
     out: api/grpc/gen/go
     opt: paths=source_relative
+  - local: bin/protoc-gen-grpc-gateway
+    out: api/grpc/gen/go
+    opt:
+      - paths=source_relative
+      - generate_unbound_methods=true
 inputs:
   - directory: api/grpc/proto
