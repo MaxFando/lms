@@ -3,13 +3,16 @@ package app
 import (
 	"context"
 	"fmt"
-	"syscall"
-
 	"github.com/MaxFando/lms/platform/closer"
 	"github.com/MaxFando/lms/platform/logger"
 	"github.com/MaxFando/lms/platform/sqlext"
 	"github.com/MaxFando/lms/platform/tracer"
+	"github.com/MaxFando/lms/ticket-service/internal/repository/postgres"
+	"github.com/MaxFando/lms/ticket-service/internal/service"
+	"github.com/MaxFando/lms/ticket-service/internal/usecase"
 	"github.com/jmoiron/sqlx"
+	"github.com/redis/go-redis/v9"
+	"syscall"
 
 	"github.com/MaxFando/lms/ticket-service/config"
 	"github.com/MaxFando/lms/ticket-service/internal/server"
@@ -53,17 +56,43 @@ func (a *App) Init(ctx context.Context) error {
 }
 
 func (a *App) Run(ctx context.Context) error {
-	serviceServer := v1.NewServer()
+	repo := postgres.NewTicketRepository(a.database)
+	opt, err := redis.ParseURL(a.config.RedisDSN)
+	if err != nil {
+		return fmt.Errorf("redis parse url: %w", err)
+	}
+
+	rdb := redis.NewClient(opt)
+	uc := usecase.NewTicketUsecase(repo)
+
+	serviceServer := v1.NewServer(uc)
 	srv := server.NewServer(a.logger, serviceServer)
-	srv.Serve(ctx)
+
+	go func() {
+		srv.Serve(ctx)
+	}()
 
 	a.srv = srv
+
+	errChan := make(chan error, 1)
+
+	drawHandler := service.NewDrawEventHandler(rdb, uc, a.config.RedisDrawChannel, 50)
+	go func() {
+		errChan <- drawHandler.Run(ctx)
+	}()
+
+	invoiceHandler := service.NewInvoiceEventHandler(rdb, uc, a.config.RedisInvoiceChannel)
+	go func() {
+		errChan <- invoiceHandler.Run(ctx)
+	}()
 
 	select {
 	case s := <-srv.Notify():
 		return fmt.Errorf("ошибка сервера: %w", s)
 	case <-ctx.Done():
 		return fmt.Errorf("ошибка контекста: %w", ctx.Err())
+	case err := <-errChan:
+		return fmt.Errorf("ошибка кроны: %w", err)
 	}
 }
 

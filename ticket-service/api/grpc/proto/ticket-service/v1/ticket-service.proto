@@ -3,17 +3,124 @@ syntax = "proto3";
 package ticket_service.v1;
 
 import "google/api/annotations.proto";
+import "google/protobuf/wrappers.proto";
 
-option go_package = "ticket_service/v1;ticketservicev1";
+option go_package = "ticket_service/v1";
 
 service TicketService {
-  rpc Echo(EchoRequest) returns (EchoResponse);
+  rpc GetTicket(GetTicketRequest) returns (Ticket) {
+    option (google.api.http) = {
+      get: "/api/tickets/{ticket_id}"
+    };
+  }
+
+  rpc CreateTicket(CreateTicketRequest) returns (Ticket) {
+    option (google.api.http) = {
+      post: "/api/tickets"
+      body: "*"
+    };
+  }
+
+  rpc ReserveTicket(ReserveTicketRequest) returns (Ticket) {
+    option (google.api.http) = {
+      post: "/api/tickets/{ticket_id}/reserve"
+      body: "*"
+    };
+  }
+
+  rpc ListUserTickets(ListUserTicketsRequest) returns (ListUserTicketsResponse) {
+    option (google.api.http) = {
+      get: "/api/tickets"
+    };
+  }
+
+  rpc ListAvailableTickets(ListAvailableTicketsRequest) returns (ListAvailableTicketsResponse) {
+    option (google.api.http) = {
+      get: "/api/tickets/available"
+    };
+  }
+
+  rpc SetWinningTickets(SetWinningTicketsRequest) returns (SetWinningTicketsResponse) {
+    option (google.api.http) = {
+      post: "/api/tickets/winning"
+      body: "*"
+    };
+  }
+
+  rpc CheckResult(CheckResultRequest) returns (CheckResultResponse) {
+    option (google.api.http) = {
+      get: "/api/tickets/{ticket_id}/check-result"
+    };
+  }
 }
 
-message EchoRequest {
-  string message = 1;
+message Draw {
+  int32 draw_id = 1;
+  string lottery_type = 2;
+  string status = 3;
+  string start_time = 4;
+  string end_time = 5;
 }
 
-message EchoResponse {
-  string message = 1;
+message Ticket {
+  int32 ticket_id = 1;
+  int32 draw_id = 2;
+  google.protobuf.Int32Value user_id = 3;
+  repeated string numbers = 4;
+  string status = 5;
+  string created_at = 6;
+}
+
+message TicketWithDraw {
+  int32 ticket_id = 1;
+  int32 draw_id = 2;
+  int32 user_id = 3;
+  repeated string numbers = 4;
+  string status = 5;
+  string created_at = 6;
+  Draw draw = 7;
+}
+
+message GetTicketRequest {
+  int32 ticket_id = 1;
+}
+
+message CreateTicketRequest {
+  int32 draw_id = 1;
+  int32 user_id = 2;
+  repeated string numbers = 3;
+}
+
+message ReserveTicketRequest {
+  int32 ticket_id = 1;
+}
+
+message ListUserTicketsRequest {
+  int32 user_id = 1;
+}
+
+message ListUserTicketsResponse {
+  repeated TicketWithDraw tickets = 1;
+}
+
+message ListAvailableTicketsRequest {}
+
+message ListAvailableTicketsResponse {
+  repeated Ticket tickets = 1;
+}
+
+message SetWinningTicketsRequest {
+  repeated int32 ticket_ids = 1;
+}
+
+message SetWinningTicketsResponse {
+  repeated Ticket tickets = 1;
+}
+
+message CheckResultRequest {
+  int32 ticket_id = 1;
+}
+
+message CheckResultResponse {
+  string status = 1;
 }
