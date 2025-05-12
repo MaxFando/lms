@@ -3,7 +3,14 @@ package app
 import (
 	"context"
 	"fmt"
+	"github.com/MaxFando/lms/payment-service/internal/client/payment"
+	"github.com/MaxFando/lms/payment-service/internal/client/ticket"
+	"github.com/MaxFando/lms/payment-service/internal/repository/postgres"
+	"github.com/MaxFando/lms/payment-service/internal/repository/redis"
+	"github.com/MaxFando/lms/payment-service/internal/service"
+	"github.com/MaxFando/lms/payment-service/pkg/scheduler"
 	"syscall"
+	"time"
 
 	"github.com/MaxFando/lms/platform/closer"
 	"github.com/MaxFando/lms/platform/logger"
@@ -17,10 +24,12 @@ import (
 )
 
 type App struct {
-	logger   logger.Logger
-	config   *config.Config
-	database *sqlx.DB
-	srv      *server.Server
+	logger    logger.Logger
+	config    *config.Config
+	database  *sqlx.DB
+	publisher *redis.Publisher
+	service   *service.Service
+	srv       *server.Server
 }
 
 func New(cfg *config.Config) *App {
@@ -47,23 +56,41 @@ func (a *App) Init(ctx context.Context) error {
 		return fmt.Errorf("ошибка при инициализации подключения к базе данных: %w", err)
 	}
 
+	if err := a.initPublisherConnection(ctx); err != nil {
+		return fmt.Errorf("ошибка при инициализации подключения к продюсеру: %w", err)
+	}
+
+	if err := a.initLogicProviders(ctx); err != nil {
+		return fmt.Errorf("ошибка при инициализации сервиса бизнес логики: %w", err)
+	}
+
 	a.logger.Info(ctx, "Инициализация приложения завершена успешно")
 
 	return nil
 }
 
 func (a *App) Run(ctx context.Context) error {
-	serviceServer := v1.NewServer()
+	serviceServer := v1.NewServer(a.service)
 	srv := server.NewServer(a.logger, serviceServer)
-	srv.Serve(ctx)
+
+	go func() {
+		srv.Serve(ctx)
+	}()
 
 	a.srv = srv
+
+	errChan := make(chan error, 1)
+	go func() {
+		errChan <- scheduler.Schedule(ctx, a.service.ProcessInvoices, time.Minute)
+	}()
 
 	select {
 	case s := <-srv.Notify():
 		return fmt.Errorf("ошибка сервера: %w", s)
 	case <-ctx.Done():
 		return fmt.Errorf("ошибка контекста: %w", ctx.Err())
+	case err := <-errChan:
+		return fmt.Errorf("ошибка кроны: %w", err)
 	}
 }
 
@@ -127,6 +154,38 @@ func (a *App) initDatabaseConnection(ctx context.Context) error {
 	}
 
 	a.logger.Info(ctx, "Подключение к базе данных успешно установлено")
+
+	return nil
+}
+
+func (a *App) initPublisherConnection(ctx context.Context) error {
+	publisher, err := redis.NewPublisher(a.config.RedisDSN, a.config.RedisChannelName)
+	if err != nil {
+		return fmt.Errorf("ошибка при создании клиента Redis: %w", err)
+	}
+
+	a.publisher = publisher
+	closer.Add(func() error {
+		if err := publisher.Close(); err != nil {
+			return fmt.Errorf("ошибка при закрытии подключения к продюссеру: %w", err)
+		}
+
+		return nil
+	})
+
+	a.logger.Info(ctx, "Подключение к продюссеру успешно установлено")
+
+	return nil
+}
+
+func (a *App) initLogicProviders(_ context.Context) error {
+	a.service = service.New(
+		ticket.New(),
+		payment.New(),
+		postgres.New(a.database),
+		a.publisher,
+		a.config,
+	)
 
 	return nil
 }
